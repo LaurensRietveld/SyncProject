@@ -1,4 +1,4 @@
-package com.data2semantics.syncproject.slave;
+package com.data2semantics.syncproject.daemon.slave;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,33 +8,16 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 public class SlaveDaemon {
-	static final String DEFAULT_CONFIG_FILE = "https://raw.github.com/LaurensRietveld/SyncProject/master/WebContent/WEB-INF/config/config.conf";
-	private URL configFile;
 	private Config config;
 	
-	SlaveDaemon() {
-		try {
-			this.configFile = new URL(DEFAULT_CONFIG_FILE);
-		} catch (MalformedURLException e) {
-			System.out.println(e.getMessage());
-		}
-	}
-	SlaveDaemon(String configFile) {
-		try {
-			this.configFile = new URL(configFile);
-		} catch (MalformedURLException e) {
-			System.out.println(e.getMessage());
-		}
+	SlaveDaemon(Config config) {
+		this.config = config;
 	}
 	
 	public void runDaemon() {
-		loadConfigFile();
 		while (true) {
 			sleep(this.config.getInt("slave.daemon.checkInterval"));
 			processQueryFile();
@@ -50,15 +33,7 @@ public class SlaveDaemon {
 			System.exit(1);
 		}
 	}
-	private void loadConfigFile() {
-		//Load typesafe config
-		try {
-			this.config = ConfigFactory.parseURL(configFile);
-		} catch (Exception e) {
-			System.out.println("ERROR: Failed loading config from " + this.configFile.toString() + ": " + e.getMessage());
-			System.exit(1);
-		}
-	}
+
 	
 	private void processQueryFile() {
 		File logFile = new File(this.config.getString("slave.queryLogDir") + "/update.log");
@@ -132,20 +107,4 @@ public class SlaveDaemon {
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		SlaveDaemon daemon;
-		if (args.length > 0) {
-			daemon = new SlaveDaemon(args[0]);
-		} else {
-			System.out.println("No config file passed on as parameter. Using " + SlaveDaemon.DEFAULT_CONFIG_FILE);
-			daemon = new SlaveDaemon();
-		}
-		daemon.runDaemon();
-		
-	}
-
 }
