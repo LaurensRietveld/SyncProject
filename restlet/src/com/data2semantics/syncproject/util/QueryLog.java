@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import com.data2semantics.syncproject.resources.Query;
 
@@ -34,6 +35,7 @@ public class QueryLog {
 		String filename = query.getApplication().getConfig().getString("master.queryLogDir") + "/" + query.getSparqlQueryType() + ".log";
 		File file = new File(filename);
 	    if(!file.exists()){
+	    	query.getApplication().getLogger().log(Level.WARNING, "Log file does not existing. Creating one: " + file.getPath());
 	    	file.createNewFile();
 	    }
 	    query.getApplication().getLogger().info("Writing query: " + query.getSparqlQuery());

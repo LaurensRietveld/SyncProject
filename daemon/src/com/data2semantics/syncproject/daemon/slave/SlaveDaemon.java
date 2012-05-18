@@ -8,6 +8,9 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import org.apache.http.client.ClientProtocolException;
+
 import com.typesafe.config.Config;
 
 public class SlaveDaemon {
@@ -40,11 +43,16 @@ public class SlaveDaemon {
 		File logFile = new File(this.config.getString("slave.queryLogDir") + "/update.log");
 		File oldQueriesFile = new File(this.config.getString("slave.queryLogDir") + "/update.log.old");
 		if (!logFile.exists()) {
-			System.out.println("ERROR: Log file to retrieve queries from does not exist: " + logFile.getName());
-			System.exit(1);
+			try {
+				System.out.println("Log file to retrieve queries from does not exist. Creating new one: " + logFile.getPath());
+				logFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		if (!oldQueriesFile.exists()) {
 			try {
+				System.out.println("Log file with already executed queries does not exist. Creating new one: " + oldQueriesFile.getPath());
 				oldQueriesFile.createNewFile();
 			} catch (IOException e) {
 				System.out.println("Failed creating file for old queries: " + e.getMessage());
@@ -52,47 +60,55 @@ public class SlaveDaemon {
 			}
 		}
 		if (logFile.length() != oldQueriesFile.length()) {
-			System.out.println("Something changed. Processing changes..\n");
+			//System.out.println("Something changed. Processing changes..\n");
 			processChanges(logFile, oldQueriesFile);
 		}
 	}
 	
 	private void processChanges(File srcFile, File destFile) {
 		try {
-			// Open the file that is the first
-			// command line parameter
-			FileInputStream srcStream = new FileInputStream(srcFile);
-			FileInputStream destStream = new FileInputStream(destFile);
 			// Get the object of DataInputStream
-			DataInputStream inSrc = new DataInputStream(srcStream);
-			DataInputStream inDest = new DataInputStream(destStream);
+			DataInputStream inSrc = new DataInputStream(new FileInputStream(srcFile));
+			DataInputStream inDest = new DataInputStream(new FileInputStream(destFile));
 			BufferedReader brSrc = new BufferedReader(new InputStreamReader(inSrc));
 			BufferedReader brDest = new BufferedReader(new InputStreamReader(inDest));
-			String strLineSrc;
+			String srcLine;
+			boolean firstline = true;
 			String changes = "";
 			// Read File Line By Line
-			while ((strLineSrc = brSrc.readLine()) != null) {
-				if (strLineSrc != brDest.readLine()) {
-					//Lines are different: save these lines
-					changes += strLineSrc + "\n";
+			while ((srcLine = brSrc.readLine()) != null) {
+				if (!srcLine.equals(brDest.readLine())) {
+					changes += (firstline? "" : "\n") + srcLine;
 				}
+				firstline = false;
+
 			}
-			// Close the input stream
+			//System.out.println("Wrinting Changes: '" + changes + "'");
 			inSrc.close();
 			inDest.close();
+			try {
+				this.executeChanges(changes);
+				this.storeChanges(changes, destFile);
+			} catch (Exception e) {
+				System.out.println("Failed executing query on slave");
+				e.printStackTrace();
+				System.exit(1);
+			}
 			
-			this.executeChanges(changes);
-			this.storeChanges(changes, destFile);
-		} catch (Exception e) {// Catch exception if any
+			
+		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
 		}
 	}
 	
-	private void executeChanges(String changes) {
-		System.out.println("executing changes: " + changes);
+	private void executeChanges(String changes) throws ClientProtocolException, IOException {
 		String[] queries = changes.split(this.config.getString("queryDelimiter"));
-		for (int i = 0; i < queries.length; i++) {
-			
+		for (String query: queries) {
+			query = query.trim();
+			if (query.length() > 0) {
+				System.out.println("Executing: " + query);
+				Query.executeQuery(config.getString("slave.tripleStore"), query);
+			}
 		}
 	}
 	

@@ -131,6 +131,13 @@ public class Query extends ServerResource {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
  
 			HttpResponse response = client.execute(post);
+			try {
+				QueryLog.log(this, QueryLog.PLAIN_TEXT_FILE);
+			} catch (NoSuchFieldException e) {
+				// TODO Auto-generated catch block
+				System.out.println(e.getMessage());
+				System.exit(1);
+			}
 			BufferedReader rd = new BufferedReader(new InputStreamReader(
 					response.getEntity().getContent()));
 			String line = "";
