@@ -13,11 +13,12 @@ import com.typesafe.config.Config;
 public class SlaveDaemon {
 	private Config config;
 	
-	SlaveDaemon(Config config) {
+	public SlaveDaemon(Config config) {
 		this.config = config;
 	}
 	
 	public void runDaemon() {
+		System.out.println("Running slave daemon");
 		while (true) {
 			sleep(this.config.getInt("slave.daemon.checkInterval"));
 			processQueryFile();

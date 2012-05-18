@@ -6,11 +6,12 @@ public class MasterDaemon {
 
 	private Config config;
 	
-	MasterDaemon(Config config) {
+	public MasterDaemon(Config config) {
 		this.config = config;
 	}
 	
 	public void runDaemon() {
+		System.out.println("Running master daemon");
 		String srcFile = this.config.getString("master.queryLogDir") + "/update.log";
 		String destFile = this.config.getString("slave.queryLogDir") + "/update.log";
 		while (true) {
