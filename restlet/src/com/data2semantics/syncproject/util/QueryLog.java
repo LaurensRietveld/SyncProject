@@ -11,8 +11,6 @@ import com.data2semantics.syncproject.resources.Query;
 public class QueryLog {
 	
 	public static final int PLAIN_TEXT_FILE = 1;
-	public static final int DB = 2;
-	public static final int EXPORT_GRAPHS = 3;
 	
 	
 	public static void log(Query query, int logType) throws NoSuchFieldException, IOException {
@@ -20,8 +18,6 @@ public class QueryLog {
             case PLAIN_TEXT_FILE:
             	logToTextFile(query);
             	break;
-            case EXPORT_GRAPHS:
-            	SesameExport.export(query.getApplication().getConfig().getString(""), "dd", new File("sdf"));
         	default:
         		throw new NoSuchFieldException("No valid logtype provided");
         }
