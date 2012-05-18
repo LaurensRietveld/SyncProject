@@ -18,12 +18,14 @@ public class QueryUpdate extends Query {
 	@Get
 	public Representation processGet() {
 		getLogger().info("Processing GET");
+		//getLogger().info()
 		Map<String, Object> requestAttributes = getRequestAttributes();
 		String query = "";
 		if (requestAttributes.containsKey("param") ) {
 			String parameters = (String)getRequestAttributes().get("param");
 			Form form = new Form(parameters);
 			query = form.getFirstValue("query");
+			this.setMode(Integer.parseInt(form.getFirstValue("mode")));
 		}
 		return processQuery(query, QueryTypes.UPDATE);
 	}
@@ -34,6 +36,7 @@ public class QueryUpdate extends Query {
 	public Representation processPost(Representation entity) {
 		getLogger().info("Processing POST");
         Form form = new Form(entity);
+        this.setMode(Integer.parseInt(form.getFirstValue("mode")));
         return this.processQuery(form.getFirstValue("query"), QueryTypes.UPDATE);
 	}
 	

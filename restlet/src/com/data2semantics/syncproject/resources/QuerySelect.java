@@ -24,6 +24,7 @@ public class QuerySelect extends Query {
 			String parameters = (String)getRequestAttributes().get("param");
 			Form form = new Form(parameters);
 			query = form.getFirstValue("query");
+			this.setMode(Integer.parseInt(form.getFirstValue("mode")));
 		}
 		return processQuery(query, QueryTypes.SELECT);
 	}
@@ -34,6 +35,7 @@ public class QuerySelect extends Query {
 	public Representation processPost(Representation entity) {
 		getLogger().info("Processing POST");
         Form form = new Form(entity);
+        this.setMode(Integer.parseInt(form.getFirstValue("mode")));
         return this.processQuery(form.getFirstValue("query"), QueryTypes.SELECT);
 	}
 }

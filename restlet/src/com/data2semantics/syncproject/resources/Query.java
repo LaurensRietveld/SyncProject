@@ -36,7 +36,7 @@ public class Query extends ServerResource {
 	//TODO: How to fix these media types... Results from sesame endpoint are still messed up: they are xml, but with a wrong xsl tag or something
 	private MediaType responseMediaType = MediaType.APPLICATION_SPARQL_RESULTS_XML;
 //	private MediaType responseMediaType = MediaType.APPLICATION_SPARQL_RESULTS_JSON;
-	
+	private int mode = 1;
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -65,6 +65,11 @@ public class Query extends ServerResource {
         return result;
 	}
 	
+	/**
+	 * Execute query (and log) query
+	 * 
+	 * @return Representation containing query result
+	 */
 	private Representation executeQuery() {
 		String uri;
     	if (sparqlQueryType == QueryTypes.SELECT) {
@@ -90,14 +95,12 @@ public class Query extends ServerResource {
 		try {
 			result = resource.get(responseMediaType);
 			try {
-				QueryLog.log(this, QueryLog.PLAIN_TEXT_FILE);
-			} catch (IOException e) {
-				queryResult += "\nFailed to log query: " + e.getMessage();
-			} catch (NoSuchFieldException e) {
-				queryResult += "\nFailed to log query: " + e.getMessage();
+				QueryLog.log(this);
+			} catch (Exception e) {
+				result = new StringRepresentation("\nFailed to log query: " + e.getMessage());
 			}
 		} catch (Exception e) {
-			queryResult = "Error in executing query on " + uri + ": " + e.getMessage();
+			result = new StringRepresentation("Error in executing query on " + uri + ": " + e.getMessage());
 			getApplication().getLogger().log(Level.SEVERE, queryResult);
 		}
 		if (result == null) {
@@ -108,7 +111,7 @@ public class Query extends ServerResource {
 	
 
 	private Representation executePOSTQuery(String uri) {
-		String queryResult = "";
+		Representation result;
 		/**
 		TODO: Execution does not work with restlet somehow.. 
 		Therefore, use the http commons stuff. Should find out whether this was a restlet bug, or
@@ -132,31 +135,57 @@ public class Query extends ServerResource {
  
 			HttpResponse response = client.execute(post);
 			try {
-				QueryLog.log(this, QueryLog.PLAIN_TEXT_FILE);
+				QueryLog.log(this);
 			} catch (NoSuchFieldException e) {
-				// TODO Auto-generated catch block
-				System.out.println(e.getMessage());
-				System.exit(1);
+				result = new StringRepresentation("\nFailed to log query: " + e.getMessage());
 			}
 			BufferedReader rd = new BufferedReader(new InputStreamReader(
 					response.getEntity().getContent()));
 			String line = "";
+			String queryResult = "";
 			while ((line = rd.readLine()) != null) {
 				queryResult += line + "\n";
 			}
+			result = new StringRepresentation(queryResult, this.responseMediaType);
 
 		} catch (IOException e) {
 			e.printStackTrace();
+			result = new StringRepresentation(e.getMessage());
 		}
-		return new StringRepresentation(queryResult, responseMediaType);
+		return result;
 	}
 	
+	/**
+	 * Get sparql query 
+	 * @return String
+	 */
 	public String getSparqlQuery() {
 		return this.sparqlQuery;
 	}
 	
+	/**
+	 * Get type of SPARQL query, either 'update' or 'query' (select)
+	 * @return String
+	 */
 	public String getSparqlQueryType() {
 		return this.sparqlQueryType;
+	}
+	
+	/**
+	 * Set mode of restlet to work in. (e.g. log text queries, dump triples as xml, use db, central server)
+	 * possible values: PLAIN_TEXT_FILE = 1, DB = 2, EXPORT_GRAPHS = 3, CENTRAL_SERVER = 4
+	 */
+	public void setMode(int mode) {
+		this.mode = mode;
+	}
+	
+	/**
+	 * Get mode of restlet to work in. (e.g. log text queries, dump triples as xml, use db, central server)
+	 * possible values: PLAIN_TEXT_FILE = 1, DB = 2, EXPORT_GRAPHS = 3, CENTRAL_SERVER = 4
+	 * @return int
+	 */
+	public int getMode() {
+		return this.mode;
 	}
 
 	

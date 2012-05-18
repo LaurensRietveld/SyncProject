@@ -46,6 +46,7 @@ body {
 				url[url.length] = '';
 				//url[url.length] = document.getElementById("query").value;
 				addParam(url, "query");
+				addParam(url, "mode");
 				document.location.href = url.join('');
 				return false;
 			}
@@ -87,6 +88,12 @@ body {
 		<form action="${action}" method="POST" onsubmit="return doSubmit();">
 		<!--<form action="${action}" method="POST">-->
 			<textarea id="query" name="query" rows="16" cols="80"></textarea><br>
+			<select id="mode" name="mode">
+			  <option value="1">Store queries as text files</option>
+			  <option value="2">Store queries in DB</option>
+			  <option value="3">Serialize graphs</option>
+			  <option value="4">Use central server in syncing text file queries</option>
+			</select><br>
 			<input type="submit" value="Execute"/>
 		</form>
 		Example queries:<br>

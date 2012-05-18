@@ -5,21 +5,37 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
-
 import com.data2semantics.syncproject.resources.Query;
+import com.typesafe.config.Config;
 
 public class QueryLog {
 	
 	public static final int PLAIN_TEXT_FILE = 1;
+	public static final int DB = 2;
+	public static final int EXPORT_GRAPHS = 3;
+	public static final int CENTRAL_SERVER = 4;
 	
 	
-	public static void log(Query query, int logType) throws NoSuchFieldException, IOException {
+	public static void log(Query query) throws NoSuchFieldException, IOException {
+		Config config = query.getApplication().getConfig();
+		int logType = query.getMode();
+		query.getApplication().getLogger().info("Using mode " + Integer.toString(logType));
         switch (logType) {
             case PLAIN_TEXT_FILE:
             	logToTextFile(query);
             	break;
+            case EXPORT_GRAPHS:
+            	//No need to export graphs when it is a simple select query
+            	if (query.getSparqlQueryType().equals("update")) {
+            		SesameExport.export(
+            			config.getString("master.exportToXmlJar"),
+            			config.getString("master.tripleStore.sesameApi"),
+            			"master",
+            			new File(config.getString("master.queryLogDir") + "/dump.xml"));
+            	}
+            	break;
         	default:
-        		throw new NoSuchFieldException("No valid logtype provided");
+        		throw new NoSuchFieldException("ERROR: No valid logtype provided");
         }
 	}
 	
@@ -45,4 +61,5 @@ public class QueryLog {
 	    bw.close();
 	}
 	
+
 }
