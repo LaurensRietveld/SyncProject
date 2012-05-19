@@ -16,7 +16,7 @@ public class QueryLog {
 	public static final int CENTRAL_SERVER = 4;
 	
 	
-	public static void log(Query query) throws NoSuchFieldException, IOException {
+	public static void log(Query query) throws Exception {
 		Config config = query.getApplication().getConfig();
 		int logType = query.getMode();
 		query.getApplication().getLogger().info("Using mode " + Integer.toString(logType));
@@ -28,7 +28,7 @@ public class QueryLog {
             	//No need to export graphs when it is a simple select query
             	if (query.getSparqlQueryType().equals("update")) {
             		SesameExport.export(
-            			config.getString("master.exportToXmlJar"),
+            			new File(config.getString("master.exportToXmlJar")),
             			config.getString("master.tripleStore.sesameApi"),
             			"master",
             			new File(config.getString("master.queryLogDir") + "/dump.xml"));
@@ -48,7 +48,13 @@ public class QueryLog {
 	 * @throws IOException 
 	 */
 	private static void logToTextFile(Query query) throws IOException {
-		String filename = query.getApplication().getConfig().getString("master.queryLogDir") + "/" + query.getSparqlQueryType() + ".log";
+		Config config = query.getApplication().getConfig();
+		String filename = config.getString("master.queryLogDir") + "/";
+		if (query.getSparqlQueryType().equals("update")) {
+			filename += config.getString("mode1.updateFile");
+		} else {
+			filename += config.getString("mode1.queryFile");
+		}
 		File file = new File(filename);
 	    if(!file.exists()){
 	    	query.getApplication().getLogger().log(Level.WARNING, "Log file does not existing. Creating one: " + file.getPath());
@@ -57,7 +63,7 @@ public class QueryLog {
 	    query.getApplication().getLogger().info("Writing query: " + query.getSparqlQuery());
 	    FileWriter fw = new FileWriter(filename, true);
 	    BufferedWriter bw = new BufferedWriter(fw);
-	    bw.write(query.getApplication().getConfig().getString("queryDelimiter") + query.getSparqlQuery());
+	    bw.write(query.getApplication().getConfig().getString("mode1.queryDelimiter") + query.getSparqlQuery());
 	    bw.close();
 	}
 	
