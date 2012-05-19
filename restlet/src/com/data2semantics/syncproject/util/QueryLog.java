@@ -30,7 +30,7 @@ public class QueryLog {
             		SesameExport.export(
             			new File(config.getString("master.exportToXmlJar")),
             			config.getString("master.tripleStore.sesameApi"),
-            			"master",
+            			config.getString("master.repoId"),
             			new File(config.getString("master.queryLogDir") + "/dump.xml"));
             	}
             	break;
