@@ -12,6 +12,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import com.data2semantics.syncproject.daemon.master.MasterDaemon;
 import com.data2semantics.syncproject.daemon.slave.SlaveDaemon;
+import com.data2semantics.syncproject.daemon.slave.SlaveTextQuery;
+import com.data2semantics.syncproject.daemon.slave.SlaveXml;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -26,20 +28,32 @@ public class Daemon {
 		this.role = role;
 	}
 	
-	public void runDaemon() {
+	public void initDaemon() {
 		this.loadConfigFile();
 		
-		
 		if (this.role.equals("slave")) {
-			SlaveDaemon daemon = new SlaveDaemon(config, mode);
-			daemon.runDaemon();
+			this.initSlaveDaemon();
 		} else if (this.role.equals("master")) {
-			MasterDaemon daemon = new MasterDaemon(config, mode);
-			daemon.runDaemon();
+			this.initMasterDaemon();
 		} else {
 			System.out.println("No valid role passed as parameter: " + this.role);
 			System.exit(1);
 		}
+	}
+	
+	private void initSlaveDaemon() {
+		SlaveDaemon daemon = null;
+		if (this.mode == 1) {
+			daemon = new SlaveTextQuery(config);
+		} else if (this.mode == 3) {
+			daemon = new SlaveXml(config);
+		}
+		daemon.runDaemon();
+	}
+	
+	private void initMasterDaemon() {
+		MasterDaemon daemon = new MasterDaemon(config, mode);
+		daemon.runDaemon();
 	}
 	
 	public void loadConfigFile() {
@@ -103,7 +117,7 @@ public class Daemon {
 //        if (commands.hasOption("config")) {
 //        	daemon.loadConfigFile();
 //        } 
-		daemon.runDaemon();
+		daemon.initDaemon();
 	}
 
 }

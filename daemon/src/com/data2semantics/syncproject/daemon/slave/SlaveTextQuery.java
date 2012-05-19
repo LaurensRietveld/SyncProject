@@ -8,58 +8,57 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import org.apache.http.client.ClientProtocolException;
-
 import com.data2semantics.syncproject.daemon.slave.util.Query;
 import com.typesafe.config.Config;
 
-public class TextQueryMode extends SlaveDaemon {
-	
-	public TextQueryMode(Config config, int mode) {
-		super(config, mode);
+public class SlaveTextQuery extends SlaveDaemon {
+	public static int MODE = 1;
+	private File queriesFile;
+	private File executedQueriesFile;
+	public SlaveTextQuery(Config config) {
+		super(config, MODE);
+		queriesFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("mode1.updateFile"));
+		executedQueriesFile = new File(queriesFile.getAbsolutePath() + ".old");
 	}
 
+	
+	
 	/**
 	 * Open and process any new changes in the file containing query logs. If files dont exist, create them
 	 */
-	protected void processFiles() {
-		File logFile = new File(this.config.getString("slave.queryLogDir") + "/" + this.config.getString("mode1.updateFile"));
-		File oldQueriesFile = new File(logFile.getAbsolutePath() + ".old");
-		if (!logFile.exists()) {
+	public void processFiles() {
+		if (!queriesFile.exists()) {
 			try {
-				System.out.println("Log file to retrieve queries from does not exist. Creating new one: " + logFile.getPath());
-				logFile.createNewFile();
+				System.out.println("Log file to retrieve queries from does not exist. Creating new one: " + queriesFile.getPath());
+				queriesFile.createNewFile();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		if (!oldQueriesFile.exists()) {
+		if (!executedQueriesFile.exists()) {
 			try {
-				System.out.println("Log file with already executed queries does not exist. Creating new one: " + oldQueriesFile.getPath());
-				oldQueriesFile.createNewFile();
+				System.out.println("Log file with already executed queries does not exist. Creating new one: " + executedQueriesFile.getPath());
+				executedQueriesFile.createNewFile();
 			} catch (IOException e) {
 				System.out.println("Failed creating file for old queries: " + e.getMessage());
 				System.exit(1);
 			}
 		}
-		if (logFile.length() != oldQueriesFile.length()) {
+		if (queriesFile.length() != executedQueriesFile.length()) {
 			//System.out.println("Something changed. Processing changes..\n");
-			processChanges(logFile, oldQueriesFile);
+			processChanges();
 		}
 	}
 	
 	/**
 	 * Compare files, and execute differences (i.e. new queries)
 	 * 
-	 * @param srcFile
-	 * @param destFile
 	 */
-	private void processChanges(File srcFile, File destFile) {
+	private void processChanges() {
 		try {
 			// Get the object of DataInputStream
-			DataInputStream inSrc = new DataInputStream(new FileInputStream(srcFile));
-			DataInputStream inDest = new DataInputStream(new FileInputStream(destFile));
+			DataInputStream inSrc = new DataInputStream(new FileInputStream(queriesFile));
+			DataInputStream inDest = new DataInputStream(new FileInputStream(executedQueriesFile));
 			BufferedReader brSrc = new BufferedReader(new InputStreamReader(inSrc));
 			BufferedReader brDest = new BufferedReader(new InputStreamReader(inDest));
 			String srcLine;
@@ -78,7 +77,7 @@ public class TextQueryMode extends SlaveDaemon {
 			inDest.close();
 			try {
 				this.executeChanges(changes);
-				this.storeChanges(changes, destFile);
+				this.storeChanges(changes);
 			} catch (Exception e) {
 				System.out.println("Failed executing query on slave");
 				e.printStackTrace();
@@ -98,8 +97,8 @@ public class TextQueryMode extends SlaveDaemon {
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 */
-	private void executeChanges(String changes) throws ClientProtocolException, IOException {
-		String[] queries = changes.split(this.config.getString("master1.queryDelimiter"));
+	private void executeChanges(String changes) throws IOException {
+		String[] queries = changes.split(this.config.getString("mode1.queryDelimiter"));
 		for (String query: queries) {
 			query = query.trim();
 			if (query.length() > 0) {
@@ -113,12 +112,12 @@ public class TextQueryMode extends SlaveDaemon {
 	 * Store (the just executed) changes in log file, to keep track of what has been executed
 	 * 
 	 * @param changes
-	 * @param destFile
+	 * @param executedQueriesFile
 	 */
-	private void storeChanges(String changes, File destFile) {
+	private void storeChanges(String changes) {
 		FileWriter fw;
 		try {
-			fw = new FileWriter(destFile, true);
+			fw = new FileWriter(executedQueriesFile, true);
 		    BufferedWriter bw = new BufferedWriter(fw);
 		    bw.write(changes);
 		    bw.close();
