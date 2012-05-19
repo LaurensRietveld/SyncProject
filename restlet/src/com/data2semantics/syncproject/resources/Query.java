@@ -136,7 +136,7 @@ public class Query extends ServerResource {
 			HttpResponse response = client.execute(post);
 			try {
 				QueryLog.log(this);
-			} catch (NoSuchFieldException e) {
+			} catch (Exception e) {
 				result = new StringRepresentation("\nFailed to log query: " + e.getMessage());
 			}
 			BufferedReader rd = new BufferedReader(new InputStreamReader(
