@@ -14,37 +14,37 @@ import org.apache.http.client.ClientProtocolException;
 import com.data2semantics.syncproject.daemon.slave.util.Query;
 import com.typesafe.config.Config;
 
-public class SlaveDaemon {
-	protected Config config;
-	protected int mode;
-	protected int checkInterval;
-	public SlaveDaemon(Config config, int mode) {
-		this.config = config;
-		this.mode = mode;
-		this.checkInterval = config.getInt("slave.daemon.checkInterval");
+public class XmlMode extends SlaveDaemon {
+	public XmlMode(Config config, int mode) {
+		super(config, mode);
 	}
 	
-	public void runDaemon() {
-		System.out.println("Running slave daemon");
-		while (true) {
-			sleep(this.checkInterval);
-			processFiles();
-		}
-	}
 	
-	protected void sleep(int seconds) {
-		try {
-			Thread.sleep(seconds * 1000);
-		} catch (InterruptedException e) {
-			System.out.println(e.getMessage());
-			System.exit(1);
-		}
-	}
-
 	
 	protected void processFiles() {
-		System.out.println("Missing implementation of processFiles");
-		System.exit(1);
+		File logFile = new File(this.config.getString("slave.queryLogDir") + "/update.log");
+		File oldQueriesFile = new File(this.config.getString("slave.queryLogDir") + "/update.log.old");
+		if (!logFile.exists()) {
+			try {
+				System.out.println("Log file to retrieve queries from does not exist. Creating new one: " + logFile.getPath());
+				logFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if (!oldQueriesFile.exists()) {
+			try {
+				System.out.println("Log file with already executed queries does not exist. Creating new one: " + oldQueriesFile.getPath());
+				oldQueriesFile.createNewFile();
+			} catch (IOException e) {
+				System.out.println("Failed creating file for old queries: " + e.getMessage());
+				System.exit(1);
+			}
+		}
+		if (logFile.length() != oldQueriesFile.length()) {
+			//System.out.println("Something changed. Processing changes..\n");
+			processChanges(logFile, oldQueriesFile);
+		}
 	}
 	
 	private void processChanges(File srcFile, File destFile) {

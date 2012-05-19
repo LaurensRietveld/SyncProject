@@ -1,4 +1,4 @@
-package com.data2semantics.syncproject.daemon.slave;
+package com.data2semantics.syncproject.daemon.slave.util;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -14,39 +14,47 @@ import org.apache.http.client.ClientProtocolException;
 import com.data2semantics.syncproject.daemon.slave.util.Query;
 import com.typesafe.config.Config;
 
-public class SlaveDaemon {
-	protected Config config;
-	protected int mode;
-	protected int checkInterval;
-	public SlaveDaemon(Config config, int mode) {
-		this.config = config;
-		this.mode = mode;
-		this.checkInterval = config.getInt("slave.daemon.checkInterval");
-	}
+public class TextQueryMode extends SlaveDaemon {
 	
-	public void runDaemon() {
-		System.out.println("Running slave daemon");
-		while (true) {
-			sleep(this.checkInterval);
-			processFiles();
-		}
-	}
-	
-	protected void sleep(int seconds) {
-		try {
-			Thread.sleep(seconds * 1000);
-		} catch (InterruptedException e) {
-			System.out.println(e.getMessage());
-			System.exit(1);
-		}
+	public TextQueryMode(Config config, int mode) {
+		super(config, mode);
 	}
 
-	
+	/**
+	 * Open and process any new changes in the file containing query logs. If files dont exist, create them
+	 */
 	protected void processFiles() {
-		System.out.println("Missing implementation of processFiles");
-		System.exit(1);
+		File logFile = new File(this.config.getString("slave.queryLogDir") + "/" + this.config.getString("mode1.updateFile"));
+		File oldQueriesFile = new File(logFile.getAbsolutePath() + ".old");
+		if (!logFile.exists()) {
+			try {
+				System.out.println("Log file to retrieve queries from does not exist. Creating new one: " + logFile.getPath());
+				logFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if (!oldQueriesFile.exists()) {
+			try {
+				System.out.println("Log file with already executed queries does not exist. Creating new one: " + oldQueriesFile.getPath());
+				oldQueriesFile.createNewFile();
+			} catch (IOException e) {
+				System.out.println("Failed creating file for old queries: " + e.getMessage());
+				System.exit(1);
+			}
+		}
+		if (logFile.length() != oldQueriesFile.length()) {
+			//System.out.println("Something changed. Processing changes..\n");
+			processChanges(logFile, oldQueriesFile);
+		}
 	}
 	
+	/**
+	 * Compare files, and execute differences (i.e. new queries)
+	 * 
+	 * @param srcFile
+	 * @param destFile
+	 */
 	private void processChanges(File srcFile, File destFile) {
 		try {
 			// Get the object of DataInputStream
@@ -83,6 +91,13 @@ public class SlaveDaemon {
 		}
 	}
 	
+	/**
+	 * Execute string containing changes
+	 * 
+	 * @param changes String containing changes
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 */
 	private void executeChanges(String changes) throws ClientProtocolException, IOException {
 		String[] queries = changes.split(this.config.getString("master1.queryDelimiter"));
 		for (String query: queries) {
@@ -94,6 +109,12 @@ public class SlaveDaemon {
 		}
 	}
 	
+	/**
+	 * Store (the just executed) changes in log file, to keep track of what has been executed
+	 * 
+	 * @param changes
+	 * @param destFile
+	 */
 	private void storeChanges(String changes, File destFile) {
 		FileWriter fw;
 		try {
