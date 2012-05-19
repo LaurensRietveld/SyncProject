@@ -19,23 +19,25 @@ public class Daemon {
 	static final String DEFAULT_CONFIG_FILE = "https://raw.github.com/LaurensRietveld/SyncProject/master/restlet/WebContent/WEB-INF/config/config.conf";
 	private URL configFile;
 	private Config config;
-	private String mode;
-	Daemon (String mode) {
+	private int mode;
+	private String role;
+	Daemon (String role, int mode) {
 		this.mode = mode;
+		this.role = role;
 	}
 	
 	public void runDaemon() {
 		this.loadConfigFile();
 		
 		
-		if (this.mode.equals("slave")) {
-			SlaveDaemon daemon = new SlaveDaemon(config);
+		if (this.role.equals("slave")) {
+			SlaveDaemon daemon = new SlaveDaemon(config, mode);
 			daemon.runDaemon();
-		} else if (this.mode.equals("master")) {
-			MasterDaemon daemon = new MasterDaemon(config);
+		} else if (this.role.equals("master")) {
+			MasterDaemon daemon = new MasterDaemon(config, mode);
 			daemon.runDaemon();
 		} else {
-			System.out.println("No valid mode passed as parameter: " + this.mode);
+			System.out.println("No valid role passed as parameter: " + this.role);
 			System.exit(1);
 		}
 	}
@@ -61,7 +63,8 @@ public class Daemon {
 		Options options = new Options();
 		options.addOption(new Option("help", "print this message"));
 		options.addOption(OptionBuilder.withArgName("file").hasArg().withDescription("Use this typesafe configuration file").create("config"));
-		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Daemon Mode to run in, either 'master' or 'slave'").create("mode"));
+		options.addOption(OptionBuilder.withArgName("role").hasArg().withDescription("Role to run in, either 'master' or 'slave'").create("role"));
+		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Mode to run: (1) sync text queries; (3) sync graph").create("mode"));
 		
 		CommandLineParser parser = new GnuParser();
 		CommandLine commands = null;
@@ -79,13 +82,23 @@ public class Daemon {
     		System.exit(0);
         }
         
+	    if (!commands.hasOption("role")) {
+	    	System.out.println("No role passed as parameter");
+	    	System.exit(1);
+	    }
+        String role = commands.getOptionValue("role");
+        int mode = 0;
 	    if (!commands.hasOption("mode")) {
 	    	System.out.println("No mode passed as parameter");
 	    	System.exit(1);
+	    } else {
+	    	mode = Integer.parseInt(commands.getOptionValue("mode"));
+	    	if (mode != 1 && mode != 3) {
+	    		System.out.println("Incorrect mode passed as parameter. Currently implemented: 1 or 3");
+	    		System.exit(1);
+	    	}
 	    }
-        String mode = commands.getOptionValue("mode");
-
-        Daemon daemon = new Daemon(mode);
+        Daemon daemon = new Daemon(role, mode);
         
 //        if (commands.hasOption("config")) {
 //        	daemon.loadConfigFile();

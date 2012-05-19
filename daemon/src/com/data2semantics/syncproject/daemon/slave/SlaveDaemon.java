@@ -15,9 +15,10 @@ import com.typesafe.config.Config;
 
 public class SlaveDaemon {
 	private Config config;
-	
-	public SlaveDaemon(Config config) {
+	private int mode;
+	public SlaveDaemon(Config config, int mode) {
 		this.config = config;
+		this.mode = mode;
 	}
 	
 	public void runDaemon() {
@@ -102,7 +103,7 @@ public class SlaveDaemon {
 	}
 	
 	private void executeChanges(String changes) throws ClientProtocolException, IOException {
-		String[] queries = changes.split(this.config.getString("queryDelimiter"));
+		String[] queries = changes.split(this.config.getString("master1.queryDelimiter"));
 		for (String query: queries) {
 			query = query.trim();
 			if (query.length() > 0) {

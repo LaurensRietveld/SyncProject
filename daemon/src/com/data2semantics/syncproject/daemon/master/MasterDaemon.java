@@ -10,16 +10,23 @@ import com.typesafe.config.Config;
 public class MasterDaemon {
 
 	private Config config;
-	
-	public MasterDaemon(Config config) {
+	private int mode;
+	public MasterDaemon(Config config, int mode) {
 		this.config = config;
+		this.mode = mode;
 	}
 	
 	public void runDaemon() {
-		System.out.println("Running master daemon");
+		System.out.println("Running master daemon in mode: " + Integer.toString(this.mode));
 		Map<String, File> files = new HashMap<String, File>();
-		files.put("srcFile", new File(this.config.getString("master.queryLogDir") + "/update.log"));
-		files.put("destFile", new File(this.config.getString("slave.queryLogDir") + "/update.log"));
+		
+		if (this.mode == 1) {
+			files.put("srcFile", new File(this.config.getString("master.queryLogDir") + "/" + this.config.getString("mode1.updateFile")));
+			files.put("destFile", new File(this.config.getString("slave.queryLogDir") + "/" + this.config.getString("mode1.updateFile")));
+		} else if (this.mode == 3) {
+			files.put("srcFile", new File(this.config.getString("master.queryLogDir") + "/" + this.config.getString("mode2.dumpFile")));
+			files.put("destFile", new File(this.config.getString("slave.queryLogDir") + "/" + this.config.getString("mode2.dumpFile")));
+		}
 		for (Map.Entry<String, File> entry : files.entrySet()) {
 			File file = entry.getValue();
 		    if (!file.exists()) {
