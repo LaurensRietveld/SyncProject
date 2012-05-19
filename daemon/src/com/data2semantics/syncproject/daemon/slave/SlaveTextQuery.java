@@ -103,7 +103,7 @@ public class SlaveTextQuery extends SlaveDaemon {
 			query = query.trim();
 			if (query.length() > 0) {
 				System.out.println("Executing: " + query);
-				Query.executeQuery(config.getString("slave.tripleStore"), query);
+				Query.executeQuery(config.getString("slave.tripleStore.updateUri"), query);
 			}
 		}
 	}
