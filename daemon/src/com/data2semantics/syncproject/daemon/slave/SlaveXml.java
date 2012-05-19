@@ -12,6 +12,7 @@ public class SlaveXml extends SlaveDaemon {
 	private File xmlFile;
 	private String sesameServer;
 	private String repositoryId;
+	private long fileLastModified = 0;
 	public SlaveXml(Config config) {
 		super(config, MODE);
 		this.xmlFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("mode2.dumpFile"));
@@ -19,14 +20,21 @@ public class SlaveXml extends SlaveDaemon {
 		this.repositoryId = config.getString("slave.repoId");
 	}
 	
-	
+	/**
+	 * Process xml graph dump. Always inserts graph on first run. After that, check if file has been modified, and ignores it if not.
+	 */
 	public void processFiles() {
 		
 		if (!xmlFile.exists()) {
 			System.out.println("ERROR: XML dump file does not exist. Exiting");
 			System.exit(1);
 		}
-		this.importXml();
+		if (xmlFile.length() > 0 && xmlFile.lastModified() != this.fileLastModified) {
+			System.out.println("Importing graph");
+			this.importXml();
+			this.fileLastModified = xmlFile.lastModified();
+		}
+		
 	}
 	
 	private void importXml() {
