@@ -42,6 +42,7 @@ public class SlaveXml extends SlaveDaemon {
         try {
 			repo.initialize();
 			RepositoryConnection con = repo.getConnection();
+			con.clear(); //Clear content of repository
 			con.add(xmlFile, "", RDFFormat.RDFXML);
 		} catch (Exception e) {
 			e.printStackTrace();
