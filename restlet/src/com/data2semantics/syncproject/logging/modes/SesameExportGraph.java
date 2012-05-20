@@ -1,9 +1,9 @@
-package com.data2semantics.syncproject.util;
+package com.data2semantics.syncproject.logging.modes;
 
 import java.io.File;
 import java.io.IOException;
 
-public class SesameExport {
+public class SesameExportGraph {
 
     public static void export(File exportJar, String server, String repoId, File exportFile) throws Exception{
     	if (!exportJar.exists()) {

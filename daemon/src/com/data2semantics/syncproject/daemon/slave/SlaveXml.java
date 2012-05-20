@@ -15,7 +15,7 @@ public class SlaveXml extends SlaveDaemon {
 	private long fileLastModified = 0;
 	public SlaveXml(Config config) {
 		super(config, MODE);
-		this.xmlFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("mode2.dumpFile"));
+		this.xmlFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("mode3.dumpFile"));
 		this.sesameServer = config.getString("slave.tripleStore.sesameApi");
 		this.repositoryId = config.getString("slave.repoId");
 	}

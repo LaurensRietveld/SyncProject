@@ -22,7 +22,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ServerResource;
 import com.data2semantics.syncproject.EntryPoint;
-import com.data2semantics.syncproject.util.QueryLog;
+import com.data2semantics.syncproject.logging.QueryLog;
 import com.data2semantics.syncproject.util.QueryTypes;
 import com.data2semantics.syncproject.util.Util;
 

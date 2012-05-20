@@ -24,8 +24,8 @@ public class MasterDaemon {
 			files.put("srcFile", new File(this.config.getString("master.queryLogDir") + "/" + this.config.getString("mode1.updateFile")));
 			files.put("destFile", new File(this.config.getString("slave.queryLogDir") + "/" + this.config.getString("mode1.updateFile")));
 		} else if (this.mode == 3) {
-			files.put("srcFile", new File(this.config.getString("master.queryLogDir") + "/" + this.config.getString("mode2.dumpFile")));
-			files.put("destFile", new File(this.config.getString("slave.queryLogDir") + "/" + this.config.getString("mode2.dumpFile")));
+			files.put("srcFile", new File(this.config.getString("master.queryLogDir") + "/" + this.config.getString("mode3.dumpFile")));
+			files.put("destFile", new File(this.config.getString("slave.queryLogDir") + "/" + this.config.getString("mode3.dumpFile")));
 		}
 		for (Map.Entry<String, File> entry : files.entrySet()) {
 			File file = entry.getValue();
