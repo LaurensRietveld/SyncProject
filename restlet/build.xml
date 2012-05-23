@@ -1,0 +1,59 @@
+<?xml version="1.0" ?> 
+<project name="SyncProject" default="war" basedir=".">
+  <property file="build.properties"/>
+  <property name="app.name"      value="syncRestlet"/>
+  <property name="app.path"      value="/${app.name}"/>
+  <property name="app.version"   value="0.1-dev"/>
+  <property name="build.home"    value="${basedir}/build"/>
+  <property name="catalina.home" value="/usr/share/tomcat6/"/>
+  <property name="dist.home"     value="${basedir}/dist"/>
+  <property name="manager.url"   value="http://localhost:8080/manager/text"/>
+  <property name="src.home"      value="${basedir}/src"/>
+  <property name="web.home"      value="${basedir}/WebContent"/>
+	<path id="compile.classpath">
+		<fileset dir="${web.home}/WEB-INF/lib">
+			<include name="*.jar"/>
+		</fileset>
+
+	    <!-- Include all elements that Tomcat exposes to applications -->
+	    <pathelement location="${catalina.home}/common/classes"/>
+	    <fileset dir="${catalina.home}/common/endorsed">
+	      <include name="*.jar"/>
+	    </fileset>
+	    <fileset dir="${catalina.home}/common/lib">
+	      <include name="*.jar"/>
+	    </fileset>
+	    <pathelement location="${catalina.home}/shared/classes"/>
+	    <fileset dir="${catalina.home}/shared/lib">
+	      <include name="*.jar"/>
+	    </fileset>
+	    <fileset dir="/usr/share/java">
+	      <include name="catalina-ant.jar"/>
+	    </fileset>
+	</path>
+	
+	<target name="init">
+		<mkdir dir="${build.home}/classes"/>
+		<mkdir dir="${dist.home}" />
+	</target>
+	
+	<target name="compile" depends="init" >
+		<javac destdir="${build.home}/classes" debug="true" srcdir="${src.home}">
+			<classpath refid="compile.classpath"/>
+		</javac>
+	</target>
+	
+	<target name="war" depends="compile">
+		<war destfile="${dist.home}/${app.name}.war" webxml="${web.home}/WEB-INF/web.xml">
+			<fileset dir="${web.home}"/>
+			<lib dir="${web.home}/WEB-INF/lib"/>
+			<classes dir="${build.home}/classes"/>
+		</war>
+	</target>
+	
+	<target name="clean">
+		<delete dir="dist" />
+		<delete dir="build" />
+	</target>
+
+</project>
