@@ -1,0 +1,45 @@
+<?xml version="1.0" ?> 
+<project name="daemon" default="compress" basedir=".">
+	<property name="app.name"      value="daemon"/>
+	<property name="compile.home"    value="${basedir}/bin"/>
+	<property name="dist.home"     value="${basedir}/dist"/>
+	<property name="src.home"      value="${basedir}/src"/>
+	<property name="lib.home"      value="${basedir}/lib"/>
+	<property name="main.class"      value="com.data2semantics.syncproject.daemon.Daemon"/>
+	
+	
+	<path id='compile.classpath'>
+		<fileset dir='${lib.home}'>
+			<include name='*.jar'/>
+		</fileset>
+	</path>
+	
+	<target name="init">
+		<mkdir dir="${compile.home}" />
+		<mkdir dir="${dist.home}" />
+	</target>
+	
+	<target name="compile" depends="init" >
+		<javac destdir="${compile.home}" debug="true" srcdir="${src.home}">
+			<classpath refid="compile.classpath"/>
+		</javac>
+	</target>
+	
+	<target name="compress" depends="compile">
+	    <manifestclasspath property="jar.classpath" jarfile="${dist.home}/${app.name}.jar">
+	      <classpath refid="compile.classpath"/>
+	    </manifestclasspath>  
+	        <jar destfile="${dist.home}/${app.name}.jar" basedir="${compile.home}">
+	            <manifest>
+					<attribute name="Main-Class" value="${main.class}" />
+					<attribute name="Class-Path" value="${jar.classpath}"/>
+	            </manifest>
+	        </jar>
+	</target>
+
+	<target name="clean">
+		<delete dir="${compile.home}" />
+		<delete dir="${dist.home}" />
+	</target>
+	
+</project>
