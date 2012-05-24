@@ -33,7 +33,7 @@ public class EntryPoint extends Application {
 	@Override
 	public synchronized Restlet createInboundRoot() {
 		loadConfigurations();
-
+		System.out.println("blaaaa");
 		// Create a router Restlet that routes each call
 		Router router = new Router(getContext());
 		
