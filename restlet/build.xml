@@ -17,9 +17,9 @@
 
 	    <!-- Include all elements that Tomcat exposes to applications -->
 	    <pathelement location="${catalina.home}/common/classes"/>
-	    <fileset dir="${catalina.home}/common/endorsed">
+	   <!-- <fileset dir="${catalina.home}/common/endorsed">
 	      <include name="*.jar"/>
-	    </fileset>
+	    </fileset>-->
 	    <fileset dir="${catalina.home}/common/lib">
 	      <include name="*.jar"/>
 	    </fileset>
