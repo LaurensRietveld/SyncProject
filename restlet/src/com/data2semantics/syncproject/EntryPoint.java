@@ -30,17 +30,17 @@ public class EntryPoint extends Application {
 	 */
 	@Override
 	public synchronized Restlet createInboundRoot() {
-		Handler fileHandler = null;
-		try {
-			fileHandler = new FileHandler("/usr/local/share/syncProject/logs");
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		getLogger().addHandler(fileHandler);
+//		Handler fileHandler = null;
+//		try {
+//			fileHandler = new FileHandler("/usr/local/share/syncProject/logs");
+//		} catch (SecurityException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		getLogger().addHandler(fileHandler);
 		getLogger().severe("In entrypoint");
 		System.out.println("asdfsdf");
 		loadConfigurations();
