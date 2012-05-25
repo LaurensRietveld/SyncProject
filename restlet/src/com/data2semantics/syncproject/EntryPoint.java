@@ -27,6 +27,7 @@ public class EntryPoint extends Application {
 	@Override
 	public synchronized Restlet createInboundRoot() {
 		getLogger().severe("In entrypoint");
+		System.out.println("asdfsdf");'
 		loadConfigurations();
 		// Create a router Restlet that routes each call
 		Router router = new Router(getContext());
