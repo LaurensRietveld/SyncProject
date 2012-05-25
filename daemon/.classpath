@@ -66,5 +66,6 @@
 	<classpathentry kind="lib" path="lib/spring-web-2.5.6.jar"/>
 	<classpathentry kind="lib" path="lib/spring-webmvc-2.5.6.jar"/>
 	<classpathentry kind="lib" path="lib/standard-1.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.20-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
