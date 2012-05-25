@@ -42,7 +42,6 @@ public class EntryPoint extends Application {
 		}
 		getLogger().addHandler(fileHandler);
 		getLogger().severe("In entrypoint");
-		System.out.println("asdfsdf");
 		loadConfigurations();
 		// Create a router Restlet that routes each call
 		Router router = new Router(getContext());
