@@ -41,6 +41,9 @@
 		<javac destdir="${build.home}/classes" debug="true" srcdir="${src.home}">
 			<classpath refid="compile.classpath"/>
 		</javac>
+		<copy  todir="${build.home}/classes">
+		      <fileset dir="${src.home}" excludes="**/*.java"/>
+	    </copy>
 	</target>
 	
 	<target name="war" depends="compile">
