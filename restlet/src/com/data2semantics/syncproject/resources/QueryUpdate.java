@@ -30,7 +30,7 @@ public class QueryUpdate extends Query {
 	
 	@Post
 	public Representation processPost(Representation entity) {
-		getLogger().info("Processing POST");
+		getLogger().severe("Processing POST");
         Form form = new Form(entity);
         this.setMode(Integer.parseInt(form.getFirstValue("mode")));
         return this.processQuery(form.getFirstValue("query"), QueryTypes.UPDATE);

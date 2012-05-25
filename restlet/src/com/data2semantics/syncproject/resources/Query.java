@@ -14,6 +14,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.restlet.Client;
 import org.restlet.Context;
+import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.representation.Representation;
@@ -80,6 +81,7 @@ public class Query extends ServerResource {
     	if (sparqlQueryType == QueryTypes.SELECT && this.sparqlQuery.length() < 2000) {
     		queryResult = executeGETQuery(uri);
     	} else {
+    		//queryResult = executeGETQuery(uri);
     		queryResult = executePOSTQuery(uri);
     		
     	}
@@ -105,25 +107,37 @@ public class Query extends ServerResource {
 		if (result == null) {
 			result = new StringRepresentation(queryResult, responseMediaType);
 		}
+		//The restlet is having memory leaks. This might solve this issue
+		//(http://restlet-discuss.1400322.n2.nabble.com/resource-leak-after-Post-quot-form-quot-td7186110.html)
+		resource.release();
+		try { 
+			resource.getResponse().getEntity().exhaust(); 
+		} catch (IOException e) { 
+			e.printStackTrace(); 
+		} 
+		
+		
 		return result;
 	}
 	
 
 	private Representation executePOSTQuery(String uri) {
-		Representation result;
-		/**
-		TODO: Execution does not work with restlet somehow.. 
+		
+		/*TODO: Execution does not work with restlet somehow.. 
 		Therefore, use the http commons stuff. Should find out whether this was a restlet bug, or
 		Form form = new Form();
 		form.add(this.sparqlQueryType, sparqlQuery);
 		ClientResource resource = new ClientResource(uri);
+		String queryResult = "bla";
 		try {
 			queryResult = resource.post(form.getWebRepresentation()).getText();
 		} catch (Exception e) {
 			queryResult = "Error in executing query on " + uri + ": " + e.getMessage();
 			e.printStackTrace();
-			getApplication().getLogger().log(Level.SEVERE, queryResult);
-		}**/
+			getLogger().severe(queryResult);
+		}
+		return new StringRepresentation(queryResult);*/
+		Representation result;
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(uri);
 		post.addHeader("Content-type", "application/x-www-form-urlencoded");
