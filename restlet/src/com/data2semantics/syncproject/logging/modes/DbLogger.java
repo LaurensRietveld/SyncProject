@@ -2,9 +2,12 @@ package com.data2semantics.syncproject.logging.modes;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Enumeration;
+
 import com.data2semantics.syncproject.resources.Query;
 import com.typesafe.config.Config;
 
@@ -35,5 +38,6 @@ public class DbLogger {
 		preparedStatement.setString(1, query.getSparqlQueryType());
 		preparedStatement.setString(2, query.getSparqlQuery());
 		preparedStatement.executeUpdate();
+		connect.close();
 	}
 }

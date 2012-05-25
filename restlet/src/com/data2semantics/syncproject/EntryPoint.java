@@ -1,8 +1,6 @@
 package com.data2semantics.syncproject;
 
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import freemarker.template.Configuration;
 import org.restlet.Application;
 import org.restlet.Request;
@@ -22,21 +20,16 @@ import com.typesafe.config.ConfigFactory;
 public class EntryPoint extends Application {
 	private Configuration fmConfiguration; //Freemarker Configuration
 	private Config config;//Typesafe config
-	// Logger
-	protected static final Logger logger = Logger.getLogger(EntryPoint.class.getName());
-	
-	
 	
 	/**
 	 * Creates a root Restlet that will receive all incoming calls.
 	 */
 	@Override
 	public synchronized Restlet createInboundRoot() {
+		getLogger().severe(getLogger().getName());
 		loadConfigurations();
-		System.out.println("blaaaa");
 		// Create a router Restlet that routes each call
 		Router router = new Router(getContext());
-		
 		//Order is important here (especially since we use 'MODE_STARTS_WITH'
 		router.attach("/query/{param}", QuerySelect.class, Template.MODE_STARTS_WITH);
 		router.attach("/query", QuerySelect.class, Template.MODE_STARTS_WITH);
@@ -84,12 +77,13 @@ public class EntryPoint extends Application {
 			Representation rep = response.getEntity();
 			this.config = ConfigFactory.parseString(rep.getText());
 		} catch (Exception e) {
-			getLogger().log(Level.SEVERE, "Unable to load config file " + configFile + ": " + e.getMessage());
+			getLogger().severe("Unable to load config file " + configFile + ": " + e.getMessage());
 		}
 	
 		//Load freemarker config
 		fmConfiguration = new Configuration();
 		fmConfiguration.setTemplateLoader(new ContextTemplateLoader(getContext(), getConfig().getString("master.restlet.templatesDir")));
 	}
+
 	
 }

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -101,7 +100,7 @@ public class Query extends ServerResource {
 			}
 		} catch (Exception e) {
 			result = new StringRepresentation("Error in executing query on " + uri + ": " + e.getMessage());
-			getApplication().getLogger().log(Level.SEVERE, queryResult);
+			getLogger().severe(queryResult);
 		}
 		if (result == null) {
 			result = new StringRepresentation(queryResult, responseMediaType);

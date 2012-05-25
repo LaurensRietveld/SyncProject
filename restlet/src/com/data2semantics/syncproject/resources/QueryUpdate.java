@@ -5,7 +5,6 @@ import org.restlet.data.Form;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
-
 import com.data2semantics.syncproject.util.QueryTypes;
 
 /**
@@ -14,11 +13,9 @@ import com.data2semantics.syncproject.util.QueryTypes;
  */
 public class QueryUpdate extends Query {
 	
-	
 	@Get
 	public Representation processGet() {
-		getLogger().info("Processing GET");
-		//getLogger().info()
+		getLogger().info("Processing GET"); 
 		Map<String, Object> requestAttributes = getRequestAttributes();
 		String query = "";
 		if (requestAttributes.containsKey("param") ) {
@@ -31,7 +28,6 @@ public class QueryUpdate extends Query {
 	}
 
 	
-	//@Post("application/sparql-query|application/x-www-form-urlencoded")
 	@Post
 	public Representation processPost(Representation entity) {
 		getLogger().info("Processing POST");
@@ -39,13 +35,4 @@ public class QueryUpdate extends Query {
         this.setMode(Integer.parseInt(form.getFirstValue("mode")));
         return this.processQuery(form.getFirstValue("query"), QueryTypes.UPDATE);
 	}
-	
-	//example query:
-	/*
-	 * Works:
-	 * SELECT * WHERE {<http://www.data2semantics.org/data/BRT_1889_02_T1_marked/Table_1/BH10> ?x ?y} LIMIT 5
-	 * 
-	 * Doesnt work:
-	 * SELECT * WHERE {?x    <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?g} LIMIT 5
-	 */
 }

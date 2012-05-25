@@ -32,7 +32,7 @@ public class TextLogger {
 	    	query.getApplication().getLogger().log(Level.WARNING, "Log file does not existing. Creating one: " + file.getPath());
 	    	file.createNewFile();
 	    }
-	    query.getApplication().getLogger().info("Writing query: " + query.getSparqlQuery());
+	    query.getContext().getLogger().info("Writing query: " + query.getSparqlQuery());
 	    FileWriter fw = new FileWriter(filename, true);
 	    BufferedWriter bw = new BufferedWriter(fw);
 	    bw.write(query.getApplication().getConfig().getString("mode1.queryDelimiter") + query.getSparqlQuery());
