@@ -4,5 +4,5 @@ cd ~/syncProject/sesameExport;
 ant;
 
 echo "==== Moving to desired location ====\n";
-cp dist/syncRestlet.war /var/lib/tomcat6/webapps/;
+cp dist/sesameExport.jar /usr/local/share/syncProject/;
 echo "done";
