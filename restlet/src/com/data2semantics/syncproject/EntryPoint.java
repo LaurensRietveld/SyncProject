@@ -4,7 +4,6 @@ package com.data2semantics.syncproject;
 import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
-
 import freemarker.template.Configuration;
 import org.restlet.Application;
 import org.restlet.Request;
@@ -24,6 +23,8 @@ import com.typesafe.config.ConfigFactory;
 public class EntryPoint extends Application {
 	private Configuration fmConfiguration; //Freemarker Configuration
 	private Config config;//Typesafe config
+	
+
 	
 	/**
 	 * Creates a root Restlet that will receive all incoming calls.
@@ -60,6 +61,12 @@ public class EntryPoint extends Application {
 		//Activate content filtering based on extensions. Trick from Christophe for content negotiation. Not needed for now
 		//getTunnelService().setExtensionsTunnel(true);
 		return router;
+	}
+	
+	@Override
+	public void start() throws Exception {
+		setStatusService(new ExtendedStatusService(this));
+		super.start();
 	}
 	
 	/**

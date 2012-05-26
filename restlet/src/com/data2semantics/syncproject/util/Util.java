@@ -23,4 +23,12 @@ public class Util  {
 		
 		return new TemplateRepresentation("query.ftl", configuration, map, MediaType.TEXT_HTML);
 	}
+		
+	public static Representation getErrorPage(EntryPoint entryPoint, String error) {
+		entryPoint.getLogger().severe(error);
+		Configuration configuration = entryPoint.getFMConfiguration();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("error", error.replace("\t", "&nbsp;&nbsp;&nbsp;").replace("\n", "<br>"));
+		return new TemplateRepresentation("error.ftl", configuration, map, MediaType.TEXT_HTML);
+	}
 }
