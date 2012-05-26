@@ -16,7 +16,7 @@ import com.data2semantics.syncproject.util.QueryTypes;
 public class QuerySelect extends Query {
 	
 	@Get
-	public Representation processGet() {
+	public Representation processGet() throws Exception {
 		getLogger().info("Processing GET");
 		Map<String, Object> requestAttributes = getRequestAttributes();
 		String query = "";
@@ -32,7 +32,7 @@ public class QuerySelect extends Query {
 	
 	//@Post("application/sparql-query|application/x-www-form-urlencoded")
 	@Post
-	public Representation processPost(Representation entity) {
+	public Representation processPost(Representation entity) throws Exception {
 		getLogger().info("Processing POST");
         Form form = new Form(entity);
         this.setMode(Integer.parseInt(form.getFirstValue("mode")));

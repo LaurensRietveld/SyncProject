@@ -1,7 +1,6 @@
 package com.data2semantics.syncproject.resources;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +50,9 @@ public class Query extends ServerResource {
 	 * 
 	 * @param sparqlQuery
 	 * @return
+	 * @throws Exception 
 	 */
-	public Representation processQuery(String sparqlQuery, String sparqlQueryType) {
+	public Representation processQuery(String sparqlQuery, String sparqlQueryType) throws Exception {
 		this.sparqlQuery = sparqlQuery;
 		this.sparqlQueryType = sparqlQueryType;
 		Representation result;
@@ -68,8 +68,9 @@ public class Query extends ServerResource {
 	 * Execute query (and log) query
 	 * 
 	 * @return Representation containing query result
+	 * @throws Exception 
 	 */
-	private Representation executeQuery() {
+	private Representation executeQuery() throws Exception {
 		String uri;
     	if (sparqlQueryType == QueryTypes.SELECT) {
     		uri = getApplication().getConfig().getString("master.tripleStore.selectUri");
@@ -87,40 +88,27 @@ public class Query extends ServerResource {
     	return queryResult;
 	}
 	
-	private Representation executeGETQuery(String uri) {
+	private Representation executeGETQuery(String uri) throws Exception {
 		String queryResult = "";
 		ClientResource resource = new ClientResource(uri + "?" + sparqlQueryType + "=" + sparqlQuery + "&Accept=" + responseMediaType.getName());  
 		resource.setNext(new Client(new Context(), Protocol.HTTP));
 		Representation result = null;
-		try {
-			result = resource.get(responseMediaType);
-			try {
-				QueryLog.log(this);
-			} catch (Exception e) {
-				result = new StringRepresentation("\nFailed to log query: " + e.getMessage());
-			}
-		} catch (Exception e) {
-			result = new StringRepresentation("Error in executing query on " + uri + ": " + e.getMessage());
-			getLogger().severe(queryResult);
-		}
+		result = resource.get(responseMediaType);
+		QueryLog.log(this);
 		if (result == null) {
 			result = new StringRepresentation(queryResult, responseMediaType);
 		}
 		//The restlet is having memory leaks. This might solve this issue
 		//(http://restlet-discuss.1400322.n2.nabble.com/resource-leak-after-Post-quot-form-quot-td7186110.html)
 		resource.release();
-		try { 
-			resource.getResponse().getEntity().exhaust(); 
-		} catch (IOException e) { 
-			e.printStackTrace(); 
-		} 
+		resource.getResponse().getEntity().exhaust(); 
 		
 		
 		return result;
 	}
 	
 
-	private Representation executePOSTQuery(String uri) {
+	private Representation executePOSTQuery(String uri) throws Exception {
 		
 		/*TODO: Execution does not work with restlet somehow.. 
 		Therefore, use the http commons stuff. Should find out whether this was a restlet bug, or
@@ -140,30 +128,19 @@ public class Query extends ServerResource {
 		HttpClient client = new DefaultHttpClient();
 		HttpPost post = new HttpPost(uri);
 		post.addHeader("Content-type", "application/x-www-form-urlencoded");
-		try {
-			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-			nameValuePairs.add(new BasicNameValuePair(this.sparqlQueryType, this.sparqlQuery));
-			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+		nameValuePairs.add(new BasicNameValuePair(this.sparqlQueryType, this.sparqlQuery));
+		post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
  
-			HttpResponse response = client.execute(post);
-			try {
-				QueryLog.log(this);
-			} catch (Exception e) {
-				result = new StringRepresentation("\nFailed to log query: " + e.getMessage());
-			}
-			BufferedReader rd = new BufferedReader(new InputStreamReader(
-					response.getEntity().getContent()));
-			String line = "";
-			String queryResult = "";
-			while ((line = rd.readLine()) != null) {
-				queryResult += line + "\n";
-			}
-			result = new StringRepresentation(queryResult, this.responseMediaType);
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			result = new StringRepresentation(e.getMessage());
+		HttpResponse response = client.execute(post);
+		QueryLog.log(this);
+		BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+		String line = "";
+		String queryResult = "";
+		while ((line = rd.readLine()) != null) {
+			queryResult += line + "\n";
 		}
+		result = new StringRepresentation(queryResult, this.responseMediaType);
 		return result;
 	}
 	
