@@ -30,7 +30,6 @@ public class QuerySelect extends Query {
 	}
 
 	
-	//@Post("application/sparql-query|application/x-www-form-urlencoded")
 	@Post
 	public Representation processPost(Representation entity) throws Exception {
 		getLogger().info("Processing POST");
