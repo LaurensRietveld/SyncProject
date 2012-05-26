@@ -12,13 +12,14 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import com.data2semantics.syncproject.daemon.master.MasterDaemon;
 import com.data2semantics.syncproject.daemon.slave.SlaveDaemon;
+import com.data2semantics.syncproject.daemon.slave.SlaveDb;
 import com.data2semantics.syncproject.daemon.slave.SlaveTextQuery;
 import com.data2semantics.syncproject.daemon.slave.SlaveXml;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 public class Daemon {
-	static final String DEFAULT_CONFIG_FILE = "https://raw.github.com/LaurensRietveld/SyncProject/master/restlet/WebContent/WEB-INF/config/config.conf";
+	static final String DEFAULT_CONFIG_FILE = "https://raw.github.com/LaurensRietveld/SyncProject/master/config/config.conf";
 	private URL configFile;
 	private Config config;
 	private int mode;
@@ -45,6 +46,8 @@ public class Daemon {
 		SlaveDaemon daemon = null;
 		if (this.mode == 1) {
 			daemon = new SlaveTextQuery(config);
+		} else if (this.mode == 2) {
+			daemon = new SlaveDb(config);
 		} else if (this.mode == 3) {
 			daemon = new SlaveXml(config);
 		}
@@ -107,16 +110,13 @@ public class Daemon {
 	    	System.exit(1);
 	    } else {
 	    	mode = Integer.parseInt(commands.getOptionValue("mode"));
-	    	if (mode != 1 && mode != 3) {
-	    		System.out.println("Incorrect mode passed as parameter. Currently implemented: 1 or 3");
+	    	if (mode < 1 || mode > 3) {
+	    		System.out.println("Incorrect mode passed as parameter. Currently implemented: 1,2 and 3");
 	    		System.exit(1);
 	    	}
 	    }
         Daemon daemon = new Daemon(role, mode);
         
-//        if (commands.hasOption("config")) {
-//        	daemon.loadConfigFile();
-//        } 
 		daemon.initDaemon();
 	}
 
