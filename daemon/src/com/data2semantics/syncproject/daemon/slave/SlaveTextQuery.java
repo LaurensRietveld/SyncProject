@@ -26,7 +26,7 @@ public class SlaveTextQuery extends SlaveDaemon {
 	/**
 	 * Open and process any new changes in the file containing query logs. If files dont exist, create them
 	 */
-	public void processFiles() {
+	public void process() {
 		if (!queriesFile.exists()) {
 			try {
 				System.out.println("Log file to retrieve queries from does not exist. Creating new one: " + queriesFile.getPath());

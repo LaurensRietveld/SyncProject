@@ -33,13 +33,13 @@ public class SlaveDaemon {
 		System.out.println("Running slave daemon in mode: " + Integer.toString(mode));
 		while (true) {
 			sleep(this.checkInterval);
-			processFiles();
+			process();
 		}
 	}
 	/**
 	 * 
 	 */
-	public void processFiles() {}
+	public void process() {}
 
 	
 }

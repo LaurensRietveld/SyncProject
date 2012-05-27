@@ -23,7 +23,7 @@ public class SlaveXml extends SlaveDaemon {
 	/**
 	 * Process xml graph dump. Always inserts graph on first run. After that, check if file has been modified, and ignores it if not.
 	 */
-	public void processFiles() {
+	public void process() {
 		
 		if (!xmlFile.exists()) {
 			System.out.println("ERROR: XML dump file does not exist. Exiting");

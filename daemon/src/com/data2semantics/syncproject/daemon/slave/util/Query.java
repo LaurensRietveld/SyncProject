@@ -26,7 +26,7 @@ public class Query {
 		nameValuePairs.add(new BasicNameValuePair("update", query));
 		post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 		client.execute(post);*/
-        
+		//System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
         HttpClient client = new HttpClient();
         BufferedReader br = null;
         PostMethod method = new PostMethod(uri);
@@ -44,7 +44,7 @@ public class Query {
             String readLine;
             while(((readLine = br.readLine()) != null)) {
               System.err.println(readLine);
-          }
+            }
           }
         } catch (Exception e) {
           System.err.println(e);
