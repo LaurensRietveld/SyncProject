@@ -38,7 +38,7 @@
 	</target>
 	
 	<target name="compile" depends="init" >
-		<javac destdir="${build.home}/classes" debug="true" srcdir="${src.home}">
+		<javac destdir="${build.home}/classes" debug="true" srcdir="${src.home}" includeantruntime="false">
 			<classpath refid="compile.classpath"/>
 		</javac>
 		<copy  todir="${build.home}/classes">

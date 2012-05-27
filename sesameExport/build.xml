@@ -20,7 +20,7 @@
 	</target>
 	
 	<target name="compile" depends="init" >
-		<javac destdir="${compile.home}" debug="true" srcdir="${src.home}">
+		<javac destdir="${compile.home}" debug="true" srcdir="${src.home}" includeantruntime="false" >
 			<classpath refid="compile.classpath"/>
 		</javac>
 	</target>
