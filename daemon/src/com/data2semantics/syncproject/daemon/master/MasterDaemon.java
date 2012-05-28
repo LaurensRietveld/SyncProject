@@ -12,6 +12,7 @@ public class MasterDaemon {
 	public MasterDaemon(Config config, int mode) {
 		this.config = config;
 		this.mode = mode;
+		runDaemon();
 	}
 	
 	public void runDaemon() {
