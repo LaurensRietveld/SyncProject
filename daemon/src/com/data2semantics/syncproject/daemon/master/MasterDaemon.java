@@ -25,8 +25,8 @@ public class MasterDaemon {
 			System.out.println("Sync of database is handled by mysql replication. No need for this daemon. Exiting...");
 			System.exit(0);
 		} else if (this.mode == 3) {
-			srcFile = new File(this.config.getString("master.queryLogDir") + "/" + this.config.getString("mode3.dumpFile"));
-			destFile = this.config.getString("slave.serverLocation") + ":" + this.config.getString("slave.queryLogDir") + "/" + this.config.getString("mode3.dumpFile");
+			srcFile = new File(this.config.getString("master.xmlDumpDir") + "/" + this.config.getString("mode3.dumpFile"));
+			destFile = this.config.getString("slave.serverLocation") + ":" + this.config.getString("slave.xmlDumpDir") + "/" + this.config.getString("mode3.dumpFile");
 		} else {
 			System.out.println("Invalid option to run master daemon in");
 			System.exit(1);

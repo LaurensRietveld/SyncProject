@@ -28,7 +28,7 @@ public class QueryLog {
             			new File(config.getString("master.exportToXmlJar")),
             			config.getString("master.tripleStore.sesameApi"),
             			config.getString("master.repoId"),
-            			new File(config.getString("master.queryLogDir") + "/" + config.getString("mode3.dumpFile")));
+            			new File(config.getString("master.xmlDumpDir") + "/" + config.getString("mode3.dumpFile")));
             	}
             	break;
             case DB:
