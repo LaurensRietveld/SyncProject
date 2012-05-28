@@ -34,6 +34,9 @@ public class QueryLog {
             case DB:
             	DbLogger.log(query);
             	break;
+            case CENTRAL_SERVER:
+            	GitLogger.log(query);
+            	break;
         	default:
         		throw new NoSuchFieldException("ERROR: No valid logtype provided");
         }

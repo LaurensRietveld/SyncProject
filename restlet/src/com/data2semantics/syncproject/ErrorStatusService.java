@@ -14,10 +14,10 @@ import org.restlet.service.StatusService;
 import com.data2semantics.syncproject.util.Util;
 
 
-public class ExtendedStatusService extends StatusService {
+public class ErrorStatusService extends StatusService {
 	EntryPoint entryPoint;
 	
-	ExtendedStatusService(EntryPoint entryPoint) {
+	ErrorStatusService(EntryPoint entryPoint) {
 		this.entryPoint = entryPoint; 
 	}
 	

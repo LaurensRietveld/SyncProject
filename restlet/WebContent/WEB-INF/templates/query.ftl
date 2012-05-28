@@ -92,7 +92,7 @@ body {
 			  <option value="1">Store queries as text files</option>
 			  <option value="2">Store queries in DB</option>
 			  <option value="3">Serialize graphs</option>
-			  <option value="4">Use central server in syncing text file queries</option>
+			  <option value="4">Use central server (i.e. GIT)</option>
 			</select><br>
 			<input type="submit" value="Execute"/>
 		</form>

@@ -65,7 +65,7 @@ public class EntryPoint extends Application {
 	
 	@Override
 	public void start() throws Exception {
-		setStatusService(new ExtendedStatusService(this));
+		setStatusService(new ErrorStatusService(this));
 		super.start();
 	}
 	
