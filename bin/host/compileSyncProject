@@ -2,7 +2,7 @@
 echo "==== Compiling Restlet ====";
 cd /home/lrd900/code/syncProject/restlet;
 ant -q;
-echo "==== Compiling Daermon ====";
+echo "==== Compiling Daemon ====";
 cd /home/lrd900/code/syncProject/daemon;
 ant -q;
 echo "==== Compiling Sesame Export ====";
