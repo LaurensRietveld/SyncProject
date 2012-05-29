@@ -17,3 +17,10 @@ function getConfig() {
 	}
 	return $config;
 }
+
+function deleteDirContent($dir) {
+	foreach (scandir($dir) as $item) {
+		if ($item == '.' || $item == '..') continue;
+		unlink($dir.DIRECTORY_SEPARATOR.$item);
+	}
+}
