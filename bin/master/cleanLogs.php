@@ -16,5 +16,5 @@
 		if ($item == '.' || $item == '..' || $item == '.git') continue;
 		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
 	}
-	`cd $gitDir; git pull;git add .; git commit -m "cleaning dir"; git push origin master`;
+	`cd $gitDir; git pull -q;git add .; git commit -qm "cleaning dir"; git push -q origin master`;
 
