@@ -3,6 +3,9 @@
 	include(__DIR__."/../util.php");
 	$config = getConfig();
 	
+	
+	echo "==== ".basename(__DIR__).": Emptying java log dir ====\n";
+	deleteDirContent("/usr/local/share/syncProject/logs");
 	echo "==== ".basename(__DIR__).": Emptying querylog dir ====\n";
 	deleteDirContent($config['master']['queryLogDir']);
 	echo "==== ".basename(__DIR__).":  Emptying XML dump dir ====\n";
