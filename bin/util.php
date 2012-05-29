@@ -32,7 +32,7 @@ function emptyTripleStore($uri) {
 		echo sparql_errno().": ".sparql_error()."\n";
 		exit;
 	}
-	$sparql = "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5";
+	$sparql = "DELETE {?x ?y ?z} WHERE {?x ?y ?z}";
 	$result = sparql_query($sparql);
 	if(!$result) {
 		print sparql_errno().": ".sparql_error()."\n";
