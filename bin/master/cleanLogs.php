@@ -1,12 +1,9 @@
 #!/usr/bin/php
 <?php
-	//$jsonString = var_export(file_get_contents("../../config/config.conf"));
 	include(__DIR__."/../util.php");
 	$config = getConfig();
 	
-	
-
-	echo "==== ".basename(__DIR__).": Emptying querlog dir ====\n";
+	echo "==== ".basename(__DIR__).": Emptying querylog dir ====\n";
 	deleteDirContent($config['master']['queryLogDir']);
 	echo "==== ".basename(__DIR__).":  Emptying XML dump dir ====\n";
 	deleteDirContent($config['master']['xmlDumpDir']);

@@ -1,4 +1,4 @@
 #!/bin/sh
 echo "==== Updating GIT repo ====\n";
 cd ~/gitCode/;
-git pull origin master;
+git pull -q origin master;
