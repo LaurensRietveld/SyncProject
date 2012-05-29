@@ -1,4 +1,5 @@
 <?php
+require_once("lib/sparqllib.php");
 function getConfig() {
 	$lines = file(__DIR__.'/../config/config.conf');
 	$jsonString = "";
@@ -22,5 +23,19 @@ function deleteDirContent($dir) {
 	foreach (scandir($dir) as $item) {
 		if ($item == '.' || $item == '..') continue;
 		unlink($dir.DIRECTORY_SEPARATOR.$item);
+	}
+}
+
+function emptyTripleStore($uri) {
+	$sparql = sparql_connect($uri);
+	if(!$sparql) {
+		echo sparql_errno().": ".sparql_error()."\n";
+		exit;
+	}
+	$sparql = "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5";
+	$result = sparql_query($sparql);
+	if(!$result) {
+		print sparql_errno().": ".sparql_error()."\n";
+		exit;
 	}
 }
