@@ -24,9 +24,9 @@
 	mysql_query("TRUNCATE TABLE `QueryLog`");
 	
 	echo "==== ".basename(__DIR__).":  Emptying triple store ====\n";
-	//$uri = $config['master']['tripleStore']['updateUri'];
-	$uri = "http://master:8080/openrdf-workbench/repositories/master/clear";
-	$fields = array('context' => "");
+	$uri = $config['master']['tripleStore']['updateUri'];
+	//$uri = "http://master:8080/openrdf-workbench/repositories/master/clear";
+	$fields = array('update' => 'DELETE {?x ?y ?z} WHERE {?x ?y ?z}');
 	//url-ify the data for the POST
 	foreach($fields as $key=>$value) {
 		$fields_string .= $key.'='.$value.'&';
