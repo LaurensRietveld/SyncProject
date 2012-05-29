@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 	//$jsonString = var_export(file_get_contents("../../config/config.conf"));
-	include(__DIR__."/../util.php");
+	include(__DIR__."/../..//util.php");
 	$config = getConfig();
 	
 	$rsyncCommand = "rsync -aqvz";
