@@ -14,4 +14,9 @@
 		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
 	}
 	`cd $gitDir; git pull -q;git add .; git commit -qm "cleaning dir"; git push -q origin master`;
-
+	echo "==== ".basename(__DIR__).":  Cleaning DB ====\n";
+	mysql_connect("localhost:3306", "syncProject");
+	$db = mysql_connect("localhost:3306", "syncProject");
+	if (!$db) die('Could not connect: ' . mysql_error());
+	@mysql_select_db("QueryLog");
+	@mysql_query("TRUNCATE TABLE `QueryLog`");
