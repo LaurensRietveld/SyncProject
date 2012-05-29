@@ -16,3 +16,9 @@ The 3 servers (master, slave and a git server) all run in virtual machines (Debi
 * Create ssh keys for the rsync between master and slave
 * Set up mysql on both, and configure replication between both
 
+## Directories:
+* bin: collection of scripts to set up the servers, compile the project, and sync the jars/wars to their proper location
+* config: Config directory. Used in all java code, as well as in bin directory scripts. Other folder (e.g. restlet folder) use symlink to connect include a config file. Other applications (e.g. daemon) gets their config file by getting it from the github repo (https://raw.github.com/....)
+* daemon: Code for the java daemon, which is runnable on both the master and slave node. Simply build, and then execute using 'java -jar daemon.jar'.
+* restlet: The restlet which runs on the master node, and which handles execution and logging of queries
+* sesameExport: A separate project to be able to export xml from sesame. Conflicting libs do not allow including this project in the restlet, therefor it needs to be called commandline. Build this dir, and put it in the appropriate folder on the master node (see config file for which one).
