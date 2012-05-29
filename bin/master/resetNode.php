@@ -3,7 +3,6 @@
 	include(__DIR__."/../util.php");
 	$config = getConfig();
 	
-	
 	echo "==== ".basename(__DIR__).": Emptying java log dir ====\n";
 	deleteDirContent("/usr/local/share/syncProject/logs");
 	echo "==== ".basename(__DIR__).": Emptying querylog dir ====\n";
@@ -23,3 +22,7 @@
 	if (!$db) die('Could not connect: ' . mysql_error());
 	mysql_select_db("QueryLog");
 	mysql_query("TRUNCATE TABLE `QueryLog`");
+	
+	echo "==== ".basename(__DIR__).":  Emptying triple store ====\n";
+	$uri = $config['master']['tripleStore']['updateUri'];
+	emptyTripleStore($uri);
