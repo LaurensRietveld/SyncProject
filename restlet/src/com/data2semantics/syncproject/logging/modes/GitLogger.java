@@ -1,65 +1,101 @@
 package com.data2semantics.syncproject.logging.modes;
 
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.NoFilepatternException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.api.errors.NoMessageException;
-import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import com.data2semantics.syncproject.resources.Query;
 import com.typesafe.config.Config;
 
 public class GitLogger {
-
-	
 	
 	/**
 	 * Log query by first writing query to file, and then committing/pushing it to a git server
 	 * 
 	 * @param query
-	 * @throws IOException
-	 * @throws NoFilepatternException
-	 * @throws NoHeadException
-	 * @throws NoMessageException
-	 * @throws ConcurrentRefUpdateException
-	 * @throws JGitInternalException
-	 * @throws WrongRepositoryStateException
-	 * @throws InvalidRemoteException
+	 * @throws Exception 
 	 */
-	public static void log(Query query) throws IOException, NoFilepatternException, NoHeadException, NoMessageException, ConcurrentRefUpdateException, JGitInternalException, WrongRepositoryStateException, InvalidRemoteException {
+	public static void log(Query query) throws Exception {
 		Config config = query.getApplication().getConfig();
-		File logFile = new File(config.getString("master.git.dir") + "/" + "update.log");
-		TextLogger.writeToFile(query.getLogger(), logFile, config.getString("mode1.queryDelimiter") + query.getSparqlQuery());
 		
-		FileRepositoryBuilder builder = new FileRepositoryBuilder();
-		File gitDir = new File(query.getApplication().getConfig().getString("master.git.dir") + "/.git");
-		if (!gitDir.exists() || !gitDir.canExecute()) {
+		File gitPath = new File(config.getString("master.gitDir") + "/" + config.getString("mode4.repoDir"));
+		if (!gitPath.exists() || !gitPath.canExecute()) {
 			throw new IOException("Git dir does not exist, or cannot execute");
 		}
-		Repository repository = builder.setGitDir(gitDir)
-		  .readEnvironment() // scan environment GIT_* variables
-		  .findGitDir() // scan up the file system tree
-		  .build();
-		Git git = new Git(repository);
+		File logFile = new File(gitPath.getAbsolutePath() + "/" + config.getString("mode4.updateFile"));
 		
-		git.add().addFilepattern(".").call();
-		git.commit().setMessage("committed query on " + getTime()).call();
-        git.push().call();
-        
+		//Set push command
+		String[] pushCmd = new String[]{"git", "push"};
+		ProcessBuilder gitPush = new ProcessBuilder(pushCmd);
+		gitPush.directory(gitPath);
+		 
+		//Set commit command
+		String[] commitCmd = new String[]{"git", "commit", "-m", "'" + getTime() + "'", logFile.getName()};
+		ProcessBuilder gitCommit = new ProcessBuilder(commitCmd);
+		gitCommit.directory(gitPath);
+		
+		//Set add command
+		String[] addCmd = new String[]{"git", "add", logFile.getName()};
+		ProcessBuilder gitAdd = new ProcessBuilder(addCmd);
+		gitAdd.directory(gitPath);
+		 
+		
+		if (!logFile.exists()) {
+	    	query.getLogger().warning("Log file does not existing. Creating one: " + logFile.getPath());
+	    	logFile.createNewFile();
+	    	executeCmd(gitAdd);
+		}
+		
+		TextLogger.writeToFile(query.getLogger(), logFile, config.getString("mode1.queryDelimiter") + query.getSparqlQuery());
+		
+		executeCmd(gitCommit);
+		executeCmd(gitPush);
 	}
 	
 	private static String getTime() {
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SS");
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 		Date dt = new Date();
-		return sdf.format(dt); // formats to 09/23/2009 13:53:28.238
+		return sdf.format(dt); // formats to 09/23/2009 13:53:28
+	}
+	
+	
+	/**
+	 * Execute command (e.g. git pull, push or commit)
+	 * 
+	 * @param cmd
+	 * @throws Exception In case git encounters error (e.g. failed merges)
+	 * 
+	 * @returns boolean False if nothing changed ('already up to date'), true otherwise
+	 */
+	private static boolean executeCmd(ProcessBuilder cmd) throws Exception {
+		boolean result = true;
+        Process process;
+		process = cmd.start();
+        int val = process.waitFor();
+
+        InputStream is = process.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        String output = "";
+        while ((line = br.readLine()) != null) {
+        	if (val != 0) {
+        		//Output this for debugging purposes. Something went wrong.
+        		output += line;
+        		continue;
+        	}
+        	if (line.equals("Already up-to-date.")) {
+        		result = false;
+        	}
+        	break;
+        }
+        if (val != 0) {
+            throw new Exception("Exception excecuting " + cmd.command().toString() +"; return code = " + val + "; command output = " + output);
+        }
+        return result;
 	}
 }

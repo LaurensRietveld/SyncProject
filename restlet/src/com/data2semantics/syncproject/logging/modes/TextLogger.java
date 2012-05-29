@@ -34,7 +34,7 @@ public class TextLogger {
 	
 	public static void writeToFile(Logger logger, File file, String string) throws IOException {
 		if(!file.exists()){
-	    	logger.log(Level.WARNING, "Log file does not existing. Creating one: " + file.getPath());
+	    	logger.warning("Log file does not existing. Creating one: " + file.getPath());
 	    	file.createNewFile();
 	    }
 	    logger.info("Writing to file: " + string);
