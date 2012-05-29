@@ -13,12 +13,12 @@ public class SlaveXml extends SlaveMode implements ModeInterface {
 	private String sesameServer;
 	private String repositoryId;
 	private long fileLastModified = 0;
-	public SlaveXml(Config config) {
+	public SlaveXml(Config config) throws Exception {
 		super(config);
 		this.xmlFile = new File(config.getString("slave.xmlDumpDir") + "/" + config.getString("mode3.dumpFile"));
 		this.sesameServer = config.getString("slave.tripleStore.sesameApi");
 		this.repositoryId = config.getString("slave.repoId");
-		
+		runDaemon();
 	}
 	
 	
@@ -45,8 +45,8 @@ public class SlaveXml extends SlaveMode implements ModeInterface {
 	public void runDaemon() throws Exception {
 		System.out.println("Running slave daemon in mode: " + Integer.toString(MODE));
 		while (true) {
-			sleep(this.sleepInterval);
 			process();
+			sleep(this.sleepInterval);
 		}
 	}
 	private void importXml() throws Exception {

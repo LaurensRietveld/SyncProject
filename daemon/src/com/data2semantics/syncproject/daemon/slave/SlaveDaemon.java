@@ -1,13 +1,5 @@
 package com.data2semantics.syncproject.daemon.slave;
 
-import org.eclipse.jgit.api.errors.CanceledException;
-import org.eclipse.jgit.api.errors.DetachedHeadException;
-import org.eclipse.jgit.api.errors.InvalidConfigurationException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
-import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
-
 import com.data2semantics.syncproject.daemon.slave.modes.SlaveDb;
 import com.data2semantics.syncproject.daemon.slave.modes.SlaveGit;
 import com.data2semantics.syncproject.daemon.slave.modes.SlaveTextQuery;

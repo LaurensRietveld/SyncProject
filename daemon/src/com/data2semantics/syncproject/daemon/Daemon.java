@@ -96,7 +96,7 @@ public class Daemon {
 	    	System.exit(1);
 	    } else {
 	    	mode = Integer.parseInt(commands.getOptionValue("mode"));
-	    	if (mode < 1 || mode > 3) {
+	    	if (mode < 1 || mode > 4) {
 	    		System.out.println("Incorrect mode passed as parameter. Currently implemented: 1,2 and 3");
 	    		System.exit(1);
 	    	}

@@ -28,6 +28,9 @@ public class MasterDaemon {
 		} else if (this.mode == 3) {
 			srcFile = new File(this.config.getString("master.xmlDumpDir") + "/" + this.config.getString("mode3.dumpFile"));
 			destFile = this.config.getString("slave.serverLocation") + ":" + this.config.getString("slave.xmlDumpDir") + "/" + this.config.getString("mode3.dumpFile");
+		} else if (this.mode == 4) {
+			System.out.println("GIT handling is done by restlet. No need for this daemon. Exiting...");
+			System.exit(0);
 		} else {
 			System.out.println("Invalid option to run master daemon in");
 			System.exit(1);
@@ -48,7 +51,7 @@ public class MasterDaemon {
 	}
 	
 	private void rsync(File srcFile, String destFile) {
-		// Currently uses passwordless SSH keys to login to sword
+		// Currently uses passwordless SSH keys to login
         String[] cmd = new String[]{"rsync", "-a", srcFile.getPath(), destFile};
         ProcessBuilder pb = new ProcessBuilder(cmd);
         Process p;

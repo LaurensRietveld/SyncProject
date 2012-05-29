@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import com.data2semantics.syncproject.daemon.slave.util.Query;
+import com.data2semantics.syncproject.daemon.slave.util.Util;
 import com.typesafe.config.Config;
 
 public class SlaveDb extends SlaveMode implements ModeInterface {
@@ -21,6 +21,7 @@ public class SlaveDb extends SlaveMode implements ModeInterface {
 		this.connection = DriverManager.getConnection(config.getString("slave.db.connection"));
 		this.connection.setAutoCommit(false);
 		this.initPreparedStatements();
+		runDaemon();
 	}
 	
 	/**
@@ -30,8 +31,8 @@ public class SlaveDb extends SlaveMode implements ModeInterface {
 	public void runDaemon() throws Exception {
 		System.out.println("Running slave daemon in mode: " + Integer.toString(MODE));
 		while (true) {
-			sleep(this.sleepInterval);
 			process();
+			sleep(this.sleepInterval);
 		}
 	}
 	
@@ -49,7 +50,7 @@ public class SlaveDb extends SlaveMode implements ModeInterface {
 			while (newQueries.next()) {
 				hasResult = true;
 				String query = newQueries.getString("Query");
-				Query.executeQuery(config.getString("slave.tripleStore.updateUri"), query);
+				Util.executeQuery(config.getString("slave.tripleStore.updateUri"), query);
 				this.storeExecutedQuery(newQueries.getInt("QueryId"));
 			}
 			if (hasResult) {
