@@ -14,7 +14,7 @@
 	$gitDir = $config['master']['gitDir']."/".$config['mode4']['repoDir'];
 	foreach (scandir($gitDir) as $item) {
 		if ($item == '.' || $item == '..' || $item == '.git') continue;
-		unlink($dir.DIRECTORY_SEPARATOR.$item);
+		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
 	}
-	`cd $gitDir; git add .; git commit -m "cleaning dir"; git push origin master`;
+	`cd $gitDir; git pull;git add .; git commit -m "cleaning dir"; git push origin master`;
 
