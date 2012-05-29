@@ -65,9 +65,8 @@ public class Daemon {
 	public static void main(String[] args) {
 		Options options = new Options();
 		options.addOption(new Option("help", "print this message"));
-		options.addOption(OptionBuilder.withArgName("file").hasArg().withDescription("Use this typesafe configuration file").create("config"));
 		options.addOption(OptionBuilder.withArgName("role").hasArg().withDescription("Role to run in, either 'master' or 'slave'").create("role"));
-		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Mode to run: (1) sync text queries; (3) sync graph").create("mode"));
+		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Mode to run: (1) sync text queries; (2) use DB; (3) sync graph; (4) central (git) server").create("mode"));
 		
 		CommandLineParser parser = new GnuParser();
 		CommandLine commands = null;
