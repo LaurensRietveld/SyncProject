@@ -1,13 +1,5 @@
 <?php
 require_once("lib/sparqllib.php");
-
-
-// is curl installed?
-if (!function_exists('curl_init')){
-	die('CURL is not installed!');
-}
-
-
 function getConfig() {
 	$lines = file(__DIR__.'/../config/config.conf');
 	$jsonString = "";
@@ -32,4 +24,29 @@ function deleteDirContent($dir) {
 		if ($item == '.' || $item == '..') continue;
 		unlink($dir.DIRECTORY_SEPARATOR.$item);
 	}
+}
+
+function doPost($uri, $fields) {
+	//url-ify the data for the POST
+	$fields_string = "";
+	foreach($fields as $key=>$value) {
+		$fields_string .= $key.'='.$value.'&';
+	}
+	rtrim($fields_string,'&');
+	//open connection
+	$ch = curl_init();
+	//set the url, number of POST vars, POST data
+	curl_setopt($ch,CURLOPT_URL,$uri);
+	curl_setopt($ch,CURLOPT_POST,count($fields));
+	//curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+	curl_setopt($ch,CURLOPT_POSTFIELDS,$fields_string);
+	
+	//execute post
+	$result = curl_exec($ch);
+	//close connection
+	curl_close($ch);
+}
+
+function importSP2Data($uri) {
+	
 }

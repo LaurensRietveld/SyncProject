@@ -1,11 +1,10 @@
 #!/bin/sh
-echo "==== Compiling ====";
-echo "\tRestlet";
+echo "==== Compiling Restlet ====";
 cd /home/lrd900/code/syncProject/restlet;
 ant -q;
-echo "\tDaemon";
+echo "==== Compiling Daemon ====";
 cd /home/lrd900/code/syncProject/daemon;
 ant -q;
-echo "\tSesame Export";
+echo "==== Compiling Sesame Export ====";
 cd /home/lrd900/code/syncProject/sesameExport;
 ant -q;
