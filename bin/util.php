@@ -46,3 +46,7 @@ function doPost($uri, $fields) {
 	//close connection
 	curl_close($ch);
 }
+
+function importSP2Data($uri) {
+	
+}
