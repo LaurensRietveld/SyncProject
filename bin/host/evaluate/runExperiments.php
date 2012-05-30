@@ -23,8 +23,9 @@
 			$uri = $config['master']['restlet']['updateUri'];
 			$fields = array(
 				"mode" => $mode,
-				"query" => 'INSERT {<http://example/sub> <http://example/bla> "testFromExperiment"} WHERE {}',
+				"query" => 'INSERT {<http://example/sub> <http://example/bla> "testFromExperiment222"} WHERE {}',
 			);
+			doPost($uri, $fields);
 		}
 	}
 	
