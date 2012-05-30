@@ -1,11 +1,8 @@
 #!/usr/bin/php
 <?php
 	//$jsonString = var_export(file_get_contents("../../config/config.conf"));
-	include(__DIR__."/../..//util.php");
+	include_once(__DIR__."/../..//util.php");
 	$config = getConfig();
-	
-	$rsyncCommand = "rsync -aqvz";
-	$syncProject = "/home/lrd900/code/syncProject/";
 	
 	echo "==== Creating SP2Benchmark turtle file ====\n";
 	$numberOfTriples = 1000;
