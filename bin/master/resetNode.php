@@ -24,29 +24,6 @@
 	mysql_query("TRUNCATE TABLE `QueryLog`");
 	
 	echo "==== ".basename(__DIR__).":  Emptying triple store ====\n";
-	error_reporting(E_ALL);
-// 	$uri = $config['master']['tripleStore']['updateUri'];
-	$uri = "http://master:8080/openrdf-workbench/repositories/master/clear";
-	//$fields = array('update' => 'DELETE {?x ?y ?z} WHERE {?x ?y ?z}');
+	$uri = $config['master']['tripleStore']['clearStoreUri'];
 	$fields = array('context' => '');
-	//url-ify the data for the POST
-	$fields_string = "";
-	foreach($fields as $key=>$value) {
-		$fields_string .= $key.'='.$value.'&';
-	}
-	rtrim($fields_string,'&');
-	//open connection
-	$ch = curl_init();
-	
-	//set the url, number of POST vars, POST data
-	curl_setopt($ch,CURLOPT_URL,$uri);
-	curl_setopt($ch,CURLOPT_POST,count($fields));
-	//curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-	curl_setopt($ch,CURLOPT_POSTFIELDS,$fields_string);
-	
-	//execute post
-	$result = curl_exec($ch);
-	//close connection
-	curl_close($ch);
-			
-	//emptyTripleStore($uri);
+	doPost($uri, $fields);

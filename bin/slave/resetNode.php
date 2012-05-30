@@ -21,3 +21,8 @@
 	if (!$db) die('Could not connect: ' . mysql_error());
 	mysql_select_db("QueryLog");
 	mysql_query("TRUNCATE TABLE `ExecutedOnSlave`");
+
+	echo "==== ".basename(__DIR__).":  Emptying triple store ====\n";
+	$uri = $config['slave']['tripleStore']['clearStoreUri'];
+	$fields = array('context' => '');
+	doPost($uri, $fields);
