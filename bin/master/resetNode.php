@@ -3,9 +3,9 @@
 	include(__DIR__."/../util.php");
 	$config = getConfig();
 	echo "==== ".basename(__DIR__).": Resetting ====\n";
-	echo "\tjava log dir\n";
-	deleteDirContent("/usr/local/share/syncProject/logs");
-	`echo "" > /usr/local/share/syncProject/logs/placeholder`;
+// 	echo "\tjava log dir\n";
+// 	deleteDirContent("/usr/local/share/syncProject/logs");
+// 	`echo "" > /usr/local/share/syncProject/logs/placeholder`;
 	echo "\tquery log dir\n";
 	deleteDirContent($config['master']['queryLogDir']);
 	echo "\txml dump dir\n";
