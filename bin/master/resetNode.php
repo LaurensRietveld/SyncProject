@@ -16,7 +16,7 @@
 		if ($item == '.' || $item == '..' || $item == '.git') continue;
 		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
 	}
-	`cd $gitDir; git pull -q;git add .; git commit -qm "cleaning dir"; git push -q origin master`;
+	`cd $gitDir; git pull -q;git add .; git commit -qam "cleaning dir"; git push -q origin master`;
 	echo "\tDB\n";
 	mysql_connect("localhost:3306", "syncProject");
 	$db = mysql_connect("localhost:3306", "syncProject");
