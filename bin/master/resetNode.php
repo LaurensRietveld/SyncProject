@@ -5,9 +5,10 @@
 	echo "==== ".basename(__DIR__).": Resetting ====\n";
 	echo "\tjava log dir\n";
 	deleteDirContent("/usr/local/share/syncProject/logs");
+	shell_exec("touch /usr/local/share/syncProject/logs/placeholder");
 	echo "\tquery log dir\n";
 	deleteDirContent($config['master']['queryLogDir']);
-	shell_exec("touch ".$config['master']['queryLogDir']."/placeholder");
+	
 	echo "\txml dump dir\n";
 	deleteDirContent($config['master']['xmlDumpDir']);
 	echo "\tGIT dir (incl push/commit)\n";
