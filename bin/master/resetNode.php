@@ -10,6 +10,8 @@
 	deleteDirContent($config['master']['queryLogDir']);
 	echo "\txml dump dir\n";
 	deleteDirContent($config['master']['xmlDumpDir']);
+	`echo "" > /usr/local/share/syncProject/xmlDump/dump.xml`;
+	`chmod 777 /usr/local/share/syncProject/xmlDump/dump.xml`;
 	echo "\tGIT dir (incl push/commit)\n";
 	$gitDir = $config['master']['gitDir']."/".$config['mode4']['repoDir'];
 	foreach (scandir($gitDir) as $item) {
