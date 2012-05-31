@@ -36,6 +36,7 @@ public class DbLogger {
 		preparedStatement.setString(1, query.getSparqlQueryType());
 		preparedStatement.setString(2, query.getSparqlQuery());
 		preparedStatement.executeUpdate();
+		query.getLogger().info("executed DB query");
 		connect.close();
 	}
 }

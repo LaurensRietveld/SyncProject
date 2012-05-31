@@ -12,6 +12,9 @@ public class SesameExportGraph {
     	if (!exportJar.canExecute()) {
     		throw new IOException("No permissions to execute " + exportJar.getAbsolutePath());
     	}
+    	if (!exportFile.canWrite()) {
+    		throw new IOException("No permissions to write to exportfile " + exportFile.getAbsolutePath());
+    	}
     	ProcessBuilder pb = new ProcessBuilder("java", "-jar", exportJar.getAbsolutePath(), server, repoId, exportFile.getAbsolutePath());
     	Process p;
 		p = pb.start();

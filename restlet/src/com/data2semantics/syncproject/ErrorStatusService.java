@@ -37,6 +37,7 @@ public class ErrorStatusService extends StatusService {
 		StringWriter sw = new StringWriter(2000);
 		PrintWriter pw = new PrintWriter(sw);
 		throwable.printStackTrace(pw);
+		this.entryPoint.getLogger().severe("Exception: " + throwable.getMessage());
 	    return new Status(status, sw.getBuffer().toString());
 	}
 }

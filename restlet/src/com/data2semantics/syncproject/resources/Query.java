@@ -56,9 +56,11 @@ public class Query extends ServerResource {
 		this.sparqlQuery = sparqlQuery;
 		this.sparqlQueryType = sparqlQueryType;
 		Representation result;
-        if (sparqlQuery.length() > 0) {
+        if (sparqlQuery == null || sparqlQuery.length() > 0) {
+        	getLogger().info("executing query");
         	result = this.executeQuery();
 		} else {
+			getLogger().info("no query to executy. Loading query form");
 			result = Util.getQueryForm(getApplication(), false, getReference().toString());
 		}
         return result;

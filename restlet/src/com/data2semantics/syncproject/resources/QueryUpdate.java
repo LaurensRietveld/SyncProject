@@ -15,7 +15,6 @@ public class QueryUpdate extends Query {
 	
 	@Get
 	public Representation processGet() throws Exception {
-		getLogger().info("Processing GET"); 
 		Map<String, Object> requestAttributes = getRequestAttributes();
 		String query = "";
 		if (requestAttributes.containsKey("param") ) {
@@ -24,15 +23,16 @@ public class QueryUpdate extends Query {
 			query = form.getFirstValue("query");
 			this.setMode(Integer.parseInt(form.getFirstValue("mode")));
 		}
+		getLogger().info("Processing GET in mode " + Integer.toString(this.getMode())); 
 		return processQuery(query, QueryTypes.UPDATE);
 	}
 
 	
 	@Post
 	public Representation processPost(Representation entity) throws Exception {
-		getLogger().severe("Processing POST");
         Form form = new Form(entity);
         this.setMode(Integer.parseInt(form.getFirstValue("mode")));
+        getLogger().info("Processing POST in mode " + Integer.toString(this.getMode())); 
         return this.processQuery(form.getFirstValue("query"), QueryTypes.UPDATE);
 	}
 }
