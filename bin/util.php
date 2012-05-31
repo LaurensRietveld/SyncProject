@@ -5,6 +5,7 @@ if (!function_exists('curl_init')){
 }
 
 
+
 function getConfig() {
 	$lines = file(__DIR__.'/../config/config.conf');
 	$jsonString = "";
@@ -30,6 +31,7 @@ function doPost($uri, $fields) {
 		$fields_string .= $key.'='.$value.'&';
 	}
 	rtrim($fields_string,'&');
+	//$fields_string = http_build_query($fields);
 	//open connection
 	$ch = curl_init();
 	//set the url, number of POST vars, POST data
@@ -37,21 +39,33 @@ function doPost($uri, $fields) {
 	curl_setopt($ch,CURLOPT_POST,count($fields));
 	//curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 	curl_setopt($ch,CURLOPT_POSTFIELDS,$fields_string);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	//curl_setopt($ch, CURLOPT_MUTE, "true");
 
-	//execute post
+// 	exit;
 	$result = curl_exec($ch);
+	if (strpos($result, "Exception")) {
+		echo "==== Exception in result ====\n".$result;
+		exit;
+	}
 	//close connection
 	curl_close($ch);
 }
 
 function executeQueries($uri, $queries, $mode) {
+	if (!count($queries)) {
+		echo "No queries to execute. Exiting...\n";
+		exit;
+	}
+	
 	$fields = array(
 		"mode" => $mode,
 		"query" => ""
 	);
-	echo "executing ".count($query)." queries: \n".implode("\n", $queries)."\n";
+	echo "executing ".count($queries)." queries: \n".implode("\n", $queries)."\n";
 	foreach ($queries as $query) {
 		$fields["query"] = $query;
+		
 		doPost($uri, $fields);
 	}
 }

@@ -4,6 +4,13 @@
 	$config = getConfig();
 	$config['args'] = loadArguments();
 	
+	
+	
+// 	doPost("http://localhost:9080/syncRestlet/update", array("mode" => 2, "query" => "INSERT {<http://example/sub> <http://example/bla> \"test\"} WHERE {} "));
+	
+// 	echo "done test";exit;
+	
+	
 	$runningVMs = shell_exec("VBoxManage list runningvms");
 	if (strpos($runningVMs, "Git Server") === false || strpos($runningVMs, "Debian Master") === false || strpos($runningVMs, "Debian Slave") === false) {
 		echo "Not all node are running. Required nodes: 'Debian Git Server', 'Debian Master', 'Debian Slave'. Exiting...\n";
@@ -16,17 +23,19 @@
 	if ($config['args']['prepareExtensive']) {
 		echo shell_exec(__DIR__."/../management/compileSyncProject.sh");
 		echo shell_exec(__DIR__."/../management/syncToNodes.php");
-		echo shell_exec("ssh master:/home/lrd900/gitCode/bin/master/updateGitRepo.sh");
-		echo shell_exec("ssh slave:/home/lrd900/gitCode/bin/slave/updateGitRepo.sh");
+		echo shell_exec("ssh master /home/lrd900/gitCode/bin/master/updateGitRepo.sh");
+		echo shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/updateGitRepo.sh");
 	}
 	resetNodes();
+	
+	
+	
 	
 	
 	$mappings = loadChangesToExecute($config);
 	
 	
 	foreach ($config['args']['mode'] AS $mode) {
-		
 		//Do n number of test runs, and for each run, execute n queries
 		$nQueries = 1;
 		while ($nQueries <= $config['args']['nChanges']) {
@@ -34,12 +43,12 @@
 			$queriesToExecute = array();
 			//For run n, perform n number of queries
 			$n = 0;
-			while (count($queriesToExecute) < $nQueries) {
+			while (count($queriesToExecute) <= $nQueries) {
 				$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
 				$n++;
 			}
 			executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
-			$numberOfTestRuns++;
+			$nQueries++;
 		}
 		
 	}
@@ -111,7 +120,7 @@
 		
 		//Take the first n
 		$selectedTriples = array_slice($results, 0, $config['args']['nChanges']);
-		$remainingTriples = array_slice($results, $config['args']['nChanges']);
+		$remainingTriples = array_slice($results, (int)$config['args']['nChanges']);
 		
 		//For each selected triple, create a matching triple in which 1 value is changed
 		$mappings = array(); //array containing info on what to change of a triple
@@ -182,8 +191,8 @@
 		$args['mode'] = $modes;
 		//Default: prepareExtensive on
 		if (!array_key_exists('prepareExtensive', $args)) {
-			echo "No arg provided for 'prepareExtensive'. By default on.\n";
-			$options['prepareExtensive'] = true;
+			echo "No arg provided for 'prepareExtensive'. By default off.\n";
+			$options['prepareExtensive'] = false;
 		}
 		if (!$args['nChanges']) {
 			$args['nChanges'] = 100;
