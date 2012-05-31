@@ -17,15 +17,6 @@
 		exit;
 	}
 	
-	/**
-	 * Run this once for all experiments, to make sure all nodes use the same codebase
-	 */
-	if ($config['args']['prepareExtensive']) {
-		echo shell_exec(__DIR__."/../management/compileSyncProject.sh");
-		echo shell_exec(__DIR__."/../management/syncToNodes.php");
-		echo shell_exec("ssh master /home/lrd900/gitCode/bin/master/updateGitRepo.sh");
-		echo shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/updateGitRepo.sh");
-	}
 	resetNodes();
 	
 	
@@ -43,7 +34,7 @@
 			$queriesToExecute = array();
 			//For run n, perform n number of queries
 			$n = 0;
-			while (count($queriesToExecute) <= $nQueries) {
+			while (count($queriesToExecute) < $nQueries) {
 				$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
 				$n++;
 			}
@@ -54,6 +45,7 @@
 	}
 	
 	function getDeleteInsertQuery($mapping) {
+		var_export($mapping);
 		$before = parseQueryItem($mapping['original']['subject'], $mapping['original']['subject type']);
 		$before .= " ".parseQueryItem($mapping['original']['predicate'], $mapping['original']['predicate type']);
 		$before .= " ".parseQueryItem($mapping['original']['object'], $mapping['original']['object type']);
@@ -66,6 +58,7 @@
 			"DELETE { ".$before." }\n".
 			"INSERT { ".$after." }\n".
 			"WHERE {}";
+		return $query;
 	}
 	
 	function parseQueryItem($value, $type) {
@@ -157,7 +150,6 @@
 		$longArgs  = array(
 				"help" => "Show help info",
 				"mode:" => "Mode to run experiments in: \n\t  (1) sync text queries; \n\t  (2) use DB; \n\t  (3) sync graph; \n\t  (4) central (git) server. Use comma seperated to run for multiple modes",
-				"prepareExtensive:" => "Either 0 or 1. Prepare all nodes extensively before running experiments (i.e., update codebase, compile and build).",
 				"nChanges:" => "How many changes to execute per iteration (default 100)"
 		);
 		//: => required value, :: => optional value, no semicolon => no value (boolean)
@@ -189,11 +181,6 @@
 			}
 		}
 		$args['mode'] = $modes;
-		//Default: prepareExtensive on
-		if (!array_key_exists('prepareExtensive', $args)) {
-			echo "No arg provided for 'prepareExtensive'. By default off.\n";
-			$options['prepareExtensive'] = false;
-		}
 		if (!$args['nChanges']) {
 			$args['nChanges'] = 100;
 		}
