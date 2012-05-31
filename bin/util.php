@@ -43,9 +43,23 @@ function doPost($uri, $fields) {
 	//close connection
 	curl_close($ch);
 }
+
+function executeQueries($uri, $queries, $mode) {
+	$fields = array(
+		"mode" => $mode,
+		"query" => ""
+	);
+	echo "executing ".count($query)." queries: \n".implode("\n", $queries)."\n";
+	foreach ($queries as $query) {
+		$fields["query"] = $query;
+		doPost($uri, $fields);
+	}
+}
 function deleteDirContent($dir) {
 	foreach (scandir($dir) as $item) {
 		if ($item == '.' || $item == '..') continue;
 		unlink($dir.DIRECTORY_SEPARATOR.$item);
 	}
 }
+
+
