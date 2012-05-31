@@ -1,0 +1,1 @@
+../master/setPermissionsSsh.sh
