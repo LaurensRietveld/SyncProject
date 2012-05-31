@@ -41,6 +41,10 @@
 	}
 	
 	function getDeleteInsertQuery($mapping) {
+		if (!is_array($mapping)) {
+			echo "Something is wrong. Can't create query from empty mapping. exiting...\n";
+			exit;
+		}
 		$before = parseQueryItem($mapping['original']['subject'], $mapping['original']['subject type']);
 		$before .= " ".parseQueryItem($mapping['original']['predicate'], $mapping['original']['predicate type']);
 		$before .= " ".parseQueryItem($mapping['original']['object'], $mapping['original']['object type']);
