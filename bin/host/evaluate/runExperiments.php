@@ -19,10 +19,6 @@
 	
 	resetNodes();
 	
-	
-	
-	
-	
 	$mappings = loadChangesToExecute($config);
 	
 	
@@ -45,7 +41,6 @@
 	}
 	
 	function getDeleteInsertQuery($mapping) {
-		var_export($mapping);
 		$before = parseQueryItem($mapping['original']['subject'], $mapping['original']['subject type']);
 		$before .= " ".parseQueryItem($mapping['original']['predicate'], $mapping['original']['predicate type']);
 		$before .= " ".parseQueryItem($mapping['original']['object'], $mapping['original']['object type']);
@@ -64,7 +59,11 @@
 	function parseQueryItem($value, $type) {
 		$result;
 		if ($type == "literal") {
-			$result = "'".$value."'";
+			if (is_numeric($value)) {
+				$result = $value;
+			} else {
+				$result = "'".$value."'";
+			}
 		} else if ($type == "uri") {
 			$result = "<".$value.">";
 		} else if ($type == "bnode") {
