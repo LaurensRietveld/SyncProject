@@ -8,7 +8,6 @@
 	shell_exec("touch /usr/local/share/syncProject/logs/placeholder");
 	echo "\tquery log dir\n";
 	deleteDirContent($config['master']['queryLogDir']);
-	
 	echo "\txml dump dir\n";
 	deleteDirContent($config['master']['xmlDumpDir']);
 	echo "\tGIT dir (incl push/commit)\n";
