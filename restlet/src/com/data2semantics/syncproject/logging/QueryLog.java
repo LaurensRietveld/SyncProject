@@ -24,10 +24,9 @@ public class QueryLog {
             case EXPORT_GRAPHS:
             	//No need to export graphs when it is a simple select query
             	if (query.getSparqlQueryType().equals("update")) {
-            		SesameExportGraph.export(
-            			new File(config.getString("master.exportToXmlJar")),
-            			config.getString("master.tripleStore.sesameApi"),
-            			config.getString("master.repoId"),
+            		ExportTriples.export(
+            			query,
+            			config.getString("master.tripleStore.selectUri"),
             			new File(config.getString("master.xmlDumpDir") + "/" + config.getString("mode3.dumpFile")));
             	}
             	break;
