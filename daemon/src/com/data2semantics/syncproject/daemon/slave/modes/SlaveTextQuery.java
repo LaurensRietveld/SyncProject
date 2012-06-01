@@ -43,13 +43,19 @@ public class SlaveTextQuery extends SlaveMode implements ModeInterface {
 	 * @throws Exception 
 	 */
 	public void process() throws Exception {
-		if (queriesFile.exists()) {
+		if (queriesFile.exists() && executedQueriesFile.exists()) {
+//			if (!executedQueriesFile.exists() && (int)queriesFile.length() < 4) {
+//				Runtime.getRuntime().exec("cp " + queriesFile.getAbsolutePath() + " " + executedQueriesFile.getAbsolutePath());
+//				sleep(2);
+//			}
 			if ((int)queriesFile.length() != (int)executedQueriesFile.length()) {
 				System.out.print(".");
 				Util.processTextFileChanges(queriesFile, executedQueriesFile, delimiter, tripleStoreUri);
 				System.out.println(".");
 				storeExperimentInfo(MODE);
 			}
+		} else {
+			System.out.println("no files exist to write to and read from");
 		}
 	}
 	

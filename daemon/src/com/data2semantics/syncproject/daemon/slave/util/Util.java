@@ -91,7 +91,12 @@ public class Util {
 	 */
 	private static void storeChanges(File file, String changes) throws IOException {
 		FileWriter fw;
-		fw = new FileWriter(file, true);
+		if (file.length() <= 1) {
+			fw = new FileWriter(file);
+		} else {
+			fw = new FileWriter(file, true);
+		}
+		
 	    BufferedWriter bw = new BufferedWriter(fw);
 	    bw.write(changes);
 	    bw.close();
