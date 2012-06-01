@@ -4,7 +4,17 @@
 	$config = getConfig();
 	$config['args'] = loadArguments();
 	
+	$db = mysql_connect("localhost:3306", "syncProject");
+	if (!$db) die('Could not connect: ' . mysql_error());
+	mysql_select_db("Experiments");
 	
+	//Time to wait between runs for each mode. Setting it too short means runs (daemons) will overlap and skew the experiments
+	$waitingTimes = array(
+		1 => 20,
+		2 => 7,
+		3 => 20,
+		4 => 20,
+	);
 	
 // 	doPost("http://localhost:9080/syncRestlet/update", array("mode" => 2, "query" => "INSERT {<http://example/sub> <http://example/bla> \"test\"} WHERE {} "));
 	
@@ -17,7 +27,6 @@
 		exit;
 	}
 	
-	resetNodes();
 	
 	$mappings = loadChangesToExecute($config);
 	
@@ -26,7 +35,13 @@
 		//Do n number of test runs, and for each run, execute n queries
 		$nQueries = 1;
 		while ($nQueries <= $config['args']['nChanges']) {
-			echo "Experiment for mode: ".$mode." and nChanges ".$nQueries."\n";
+			resetNodes();
+			sleep(5);
+			
+			echo microtime()." - Mode: ".$mode." - nChanges: ".$nQueries."\n";
+			
+			
+			
 			$queriesToExecute = array();
 			//For run n, perform n number of queries
 			$n = 0;
@@ -35,8 +50,16 @@
 				$n++;
 			}
 			executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
+			mysql_query("INSERT INTO Experiments (Mode, nChanges) VALUES (".(int)$mode.", ".(int)$nQueries.");");
 			$nQueries++;
+			sleep($waitingTimes[$mode]); //wait x seconds, so we have time to measure everything
+			
 		}
+		
+	}
+	
+	function storeExperimentInfo() {
+		
 		
 	}
 	
