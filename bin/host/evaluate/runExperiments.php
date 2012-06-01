@@ -27,9 +27,12 @@
 		exit;
 	}
 	
-	
+	resetNodes(); //reset node before loading mappings, as resetting loads triples needed to create the mappings.
 	$mappings = loadChangesToExecute($config);
-	
+	if (!count($mappings)) {
+		echo "No mappings loaded from triplestore. Exiting...\n";
+		exit;
+	}
 	
 	foreach ($config['args']['mode'] AS $mode) {
 		//Do n number of test runs, and for each run, execute n queries
@@ -38,7 +41,7 @@
 			resetNodes();
 			sleep(5);
 			
-			echo microtime()." - Mode: ".$mode." - nChanges: ".$nQueries."\n";
+			echo "Mode: ".$mode." - nChanges: ".$nQueries;
 			
 			
 			
@@ -49,20 +52,20 @@
 				$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
 				$n++;
 			}
+			echo ".";
+			mysql_query("INSERT INTO Experiments (Mode, nChanges, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", '".$config['args']['runId']."');");
 			executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
-			mysql_query("INSERT INTO Experiments (Mode, nChanges) VALUES (".(int)$mode.", ".(int)$nQueries.");");
+			echo ".\n";
 			$nQueries++;
-			sleep($waitingTimes[$mode]); //wait x seconds, so we have time to measure everything
+			if ($nQueries <= $config['args']['nChanges']) {
+				//wait x seconds, so we have time to measure everything (but not after the last run, as there is no use)
+				sleep($waitingTimes[$mode]); 
+			}
 			
 		}
 		
 	}
-	
-	function storeExperimentInfo() {
-		
-		
-	}
-	
+
 	function getDeleteInsertQuery($mapping) {
 		if (!is_array($mapping)) {
 			echo "Something is wrong. Can't create query from empty mapping. exiting...\n";
@@ -176,7 +179,8 @@
 		$longArgs  = array(
 				"help" => "Show help info",
 				"mode:" => "Mode to run experiments in: \n\t  (1) sync text queries; \n\t  (2) use DB; \n\t  (3) sync graph; \n\t  (4) central (git) server. Use comma seperated to run for multiple modes",
-				"nChanges:" => "How many changes to execute per iteration (default 100)"
+				"nChanges:" => "How many changes to execute per iteration (default 100)",
+				"runId:" => "Id to run experiment for. Uses timestamp if none provided",
 		);
 		//: => required value, :: => optional value, no semicolon => no value (boolean)
 		$args = getopt("", array_keys($longArgs));
@@ -209,6 +213,10 @@
 		$args['mode'] = $modes;
 		if (!$args['nChanges']) {
 			$args['nChanges'] = 100;
+		}
+		
+		if (!strlen($args['runId'])) {
+			$args['runId'] = date("Ymd H:i");
 		}
 		return $args;
 	}

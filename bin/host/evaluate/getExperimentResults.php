@@ -22,6 +22,8 @@
 				ORDER BY Timestamp ASC LIMIT 1";
 			$result2 = mysql_query($query);
 			$row2 = mysql_fetch_array($result2);
+			
+			//Difference between executing queries on restlet, and the first time after that the slave finished executing it's import
 			echo ($row['Timestamp']) ." < ". ($row2['Timestamp'])." -- diff: ".(strtotime($row2['Timestamp']) - strtotime($row['Timestamp']))." sec.\n";
 			
 		}
