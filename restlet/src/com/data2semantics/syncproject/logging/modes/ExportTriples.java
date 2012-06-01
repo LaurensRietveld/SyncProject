@@ -15,6 +15,9 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 public class ExportTriples {
     public static void export(com.data2semantics.syncproject.resources.Query query, String endpoint, File exportFile) throws Exception{
     	//Always create (or overwrite) new file
+    	if (exportFile.exists()) {
+    		exportFile.delete();
+    	}
 		exportFile.createNewFile();
     	ResultSet result = query(endpoint, "SELECT * WHERE {?subject ?predicate ?object}");
     	query.getLogger().info("going to process query");
@@ -22,10 +25,12 @@ public class ExportTriples {
         BufferedWriter bufferWritter = new BufferedWriter(fileWriter);
     	while (result.hasNext()) {
     		QuerySolution solution = result.next();
-	        bufferWritter.write(
-	        		getString(solution.get("subject")) + " " + 
+    		String writeString = getString(solution.get("subject")) + " " + 
 	        		getString(solution.get("predicate")) + " " + 
-	        		getString(solution.get("subject")) + "\n");
+	        		getString(solution.get("object")) + "\n";
+			bufferWritter.write(writeString);
+	        
+	        
 		}
     	bufferWritter.close();
     }
@@ -54,7 +59,9 @@ public class ExportTriples {
 			}
 
 		} else if (rdfNode.isAnon()) {
-			result = rdfNode.toString();
+			//Make it into a uri
+			result = "<" + rdfNode.toString() + ">";
+			
 		} else if (rdfNode.isResource() || rdfNode.isURIResource()) {
 			result = "<" + rdfNode.toString() + ">";
 		}
