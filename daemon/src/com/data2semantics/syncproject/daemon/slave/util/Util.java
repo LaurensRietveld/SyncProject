@@ -58,6 +58,7 @@ public class Util {
 		//System.out.println("Wrinting Changes: '" + changes + "'");
 		inSrc.close();
 		inDest.close();
+		
 		executeChanges(changes, delimiter, tripleStoreUri);
 		storeChanges(executedQueriesFile, changes);
 			
@@ -75,7 +76,7 @@ public class Util {
 		for (String query: queries) {
 			query = query.trim();
 			if (query.length() > 0) {
-				System.out.println("Executing: " + query);
+//				System.out.println("Executing: " + query);
 				executeQuery(tripleStoreUri, query);
 			}
 		}

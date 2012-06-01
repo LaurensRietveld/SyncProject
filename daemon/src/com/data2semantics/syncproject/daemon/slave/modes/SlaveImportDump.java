@@ -25,10 +25,8 @@ public class SlaveImportDump extends SlaveMode implements ModeInterface {
 	 */
 	public void process() throws Exception {
 		if (!dumpFile.exists()) {
-			System.out.println("ERROR: XML dump file does not exist. Exiting");
-			System.exit(1);
-		}
-		if (dumpFile.length() > 0 && dumpFile.lastModified() != this.fileLastModified) {
+			System.out.println("WARNING: XML dump file does not exist");
+		} else if (dumpFile.length() > 0 && dumpFile.lastModified() != this.fileLastModified) {
 			System.out.print(".");
 			this.importDump();
 			System.out.println(".");
