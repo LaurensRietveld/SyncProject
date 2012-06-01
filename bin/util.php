@@ -62,7 +62,7 @@ function executeQueries($uri, $queries, $mode) {
 		"mode" => $mode,
 		"query" => ""
 	);
-	echo "executing ".count($queries)." queries: \n".implode("\n", $queries)."\n";
+	//echo "executing ".count($queries)." queries: \n".implode("\n", $queries)."\n";
 	foreach ($queries as $query) {
 		$fields["query"] = $query;
 		
