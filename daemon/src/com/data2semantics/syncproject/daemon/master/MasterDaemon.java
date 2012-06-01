@@ -9,13 +9,13 @@ public class MasterDaemon {
 
 	private Config config;
 	private int mode;
-	public MasterDaemon(Config config, int mode) {
+	public MasterDaemon(Config config, int mode) throws IOException {
 		this.config = config;
 		this.mode = mode;
 		runDaemon();
 	}
 	
-	public void runDaemon() {
+	public void runDaemon() throws IOException {
 		System.out.println("Running master daemon in mode: " + Integer.toString(this.mode));
 		File srcFile = null; //src file is on same server as daemon, so use regular File object
 		String destFile = null; //Dest file is (probably) on other server. Use string instead

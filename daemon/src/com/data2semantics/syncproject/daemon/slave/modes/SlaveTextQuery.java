@@ -1,6 +1,8 @@
 package com.data2semantics.syncproject.daemon.slave.modes;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import com.data2semantics.syncproject.daemon.slave.util.Util;
 import com.typesafe.config.Config;
@@ -42,22 +44,15 @@ public class SlaveTextQuery extends SlaveMode implements ModeInterface {
 	 */
 	public void process() throws Exception {
 		if (!queriesFile.exists()) {
-			try {
-				System.out.println("Log file to retrieve queries from does not exist. Creating new one: " + queriesFile.getPath());
-				queriesFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			queriesFile.createNewFile();
 		}
 		if (!executedQueriesFile.exists()) {
-			try {
-				System.out.println("Log file with already executed queries does not exist. Creating new one: " + executedQueriesFile.getPath());
-				executedQueriesFile.createNewFile();
-			} catch (IOException e) {
-				System.out.println("Failed creating file for old queries: " + e.getMessage());
-				System.exit(1);
-			}
+			System.out.println((int)queriesFile.length());
+			executedQueriesFile.createNewFile();
+			System.out.println((int)executedQueriesFile.length());
 		}
+//		System.out.println(Integer.toString((int) queriesFile.length()));
+//		System.out.println(Integer.toString((int)executedQueriesFile.length()));
 		if (queriesFile.length() != executedQueriesFile.length()) {
 			System.out.print(".");
 			Util.processTextFileChanges(queriesFile, executedQueriesFile, delimiter, tripleStoreUri);
