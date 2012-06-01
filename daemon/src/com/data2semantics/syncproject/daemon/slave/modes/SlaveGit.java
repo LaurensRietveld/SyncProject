@@ -75,7 +75,9 @@ public class SlaveGit extends SlaveMode implements ModeInterface {
 			System.out.println("File containing queries executed on master does not exist. Wait.");
 		} else if (changed) {
 			//Something changed
+			System.out.print(".");
 			Util.processTextFileChanges(queriesFile, executedQueries, delimiter, tripleStoreUri);
+			System.out.println(".");
 		}
 		
 		

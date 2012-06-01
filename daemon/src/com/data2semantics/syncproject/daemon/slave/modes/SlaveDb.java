@@ -54,7 +54,9 @@ public class SlaveDb extends SlaveMode implements ModeInterface {
 				this.storeExecutedQuery(newQueries.getInt("QueryId"));
 			}
 			if (hasResult) {
+				System.out.print(".");
 				executeBatch();
+				System.out.println(".");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

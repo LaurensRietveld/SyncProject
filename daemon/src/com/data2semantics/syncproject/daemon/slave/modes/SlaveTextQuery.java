@@ -56,7 +56,9 @@ public class SlaveTextQuery extends SlaveMode implements ModeInterface {
 			}
 		}
 		if (queriesFile.length() != executedQueriesFile.length()) {
+			System.out.print(".");
 			Util.processTextFileChanges(queriesFile, executedQueriesFile, delimiter, tripleStoreUri);
+			System.out.println(".");
 		}
 	}
 	
