@@ -7,8 +7,8 @@
 // 	deleteDirContent("/usr/local/share/syncProject/logs");
 // 	`echo "" > /usr/local/share/syncProject/logs/placeholder`;
 	echo "\tquery log dir\n";
-	deleteDirContent($config['master']['queryLogDir']);
-	//shell_exec("echo '' > ".$config['master']['queryLogDir']."/".$config['mode1']['updateFile']);
+	//deleteDirContent($config['master']['queryLogDir']);
+	shell_exec("echo '' > ".$config['master']['queryLogDir']."/".$config['mode1']['updateFile']);
 	echo "\txml dump dir\n";
 	//deleteDirContent($config['master']['xmlDumpDir']);
 	//`echo "" > /usr/local/share/syncProject/xmlDump/dump.xml`;
