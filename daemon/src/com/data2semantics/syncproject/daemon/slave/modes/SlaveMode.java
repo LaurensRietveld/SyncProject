@@ -19,8 +19,8 @@ public class SlaveMode {
 		this.config = config;
 		this.sleepInterval = config.getInt("slave.daemon.checkInterval");	
 		Class.forName(config.getString("experiments.db.javaDriver"));
-//		this.expConnection = DriverManager.getConnection(config.getString("experiments.db.connection"));
-		this.expConnection = DriverManager.getConnection("jdbc:mysql://localhost/Experiments?user=syncProject");
+		this.expConnection = DriverManager.getConnection(config.getString("experiments.db.connection"));
+		//this.expConnection = DriverManager.getConnection("jdbc:mysql://localhost/Experiments?user=syncProject");
 		this.expConnection.setAutoCommit(false);
 		expPreparedStatement = expConnection.prepareStatement(
 			"INSERT INTO Daemon (Mode,Node)\n" +
