@@ -10,7 +10,6 @@
 	echo "==== Syncing builds ====\n";
 	$server = $config['master']['serverLocation'].":";
 	shell_exec($rsyncCommand." ".$syncProject."daemon/dist/daemon.jar ".$server.$config['master']['daemonFile']);
-	shell_exec($rsyncCommand." ".$syncProject."sesameExport/dist/sesameExport.jar ".$server.$config['master']['exportToXmlJar']);
 	shell_exec($rsyncCommand." ".$syncProject."restlet/dist/syncRestlet.war ".$server."/var/lib/tomcat6/webapps/");
 	
 	$server = $config['slave']['serverLocation'].":";
