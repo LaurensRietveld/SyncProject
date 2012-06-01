@@ -29,8 +29,10 @@ public class SlaveImportDump extends SlaveMode implements ModeInterface {
 			System.exit(1);
 		}
 		if (dumpFile.length() > 0 && dumpFile.lastModified() != this.fileLastModified) {
-			System.out.println("Importing graph");
+			System.out.print(".");
 			this.importDump();
+			System.out.println(".");
+			storeExperimentInfo(MODE);
 			this.fileLastModified = dumpFile.lastModified();
 		}
 	}

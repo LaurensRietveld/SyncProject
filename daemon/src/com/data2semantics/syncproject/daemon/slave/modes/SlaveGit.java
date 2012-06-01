@@ -78,6 +78,7 @@ public class SlaveGit extends SlaveMode implements ModeInterface {
 			System.out.print(".");
 			Util.processTextFileChanges(queriesFile, executedQueries, delimiter, tripleStoreUri);
 			System.out.println(".");
+			storeExperimentInfo(MODE);
 		}
 		
 		

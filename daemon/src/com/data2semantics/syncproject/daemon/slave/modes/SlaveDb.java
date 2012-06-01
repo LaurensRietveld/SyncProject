@@ -57,6 +57,7 @@ public class SlaveDb extends SlaveMode implements ModeInterface {
 				System.out.print(".");
 				executeBatch();
 				System.out.println(".");
+				storeExperimentInfo(MODE);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
