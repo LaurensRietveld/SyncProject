@@ -43,21 +43,13 @@ public class SlaveTextQuery extends SlaveMode implements ModeInterface {
 	 * @throws Exception 
 	 */
 	public void process() throws Exception {
-		if (!queriesFile.exists()) {
-			queriesFile.createNewFile();
-		}
-
-		if ((int)queriesFile.length() < 3) {
-			//ugly workaround. On creation of the first file, the length seems to differ depending on whether java/shell/php creates it.
-			//So, when the file is close to empty, do not create a new 'executedqueries' file but copy the old one.
-			Runtime.getRuntime().exec("cp " + queriesFile.getAbsolutePath() + " " + executedQueriesFile.getAbsolutePath());
-			sleep(2);
-		}
-		if ((int)queriesFile.length() != (int)executedQueriesFile.length()) {
-			System.out.print(".");
-			Util.processTextFileChanges(queriesFile, executedQueriesFile, delimiter, tripleStoreUri);
-			System.out.println(".");
-			storeExperimentInfo(MODE);
+		if (queriesFile.exists()) {
+			if ((int)queriesFile.length() != (int)executedQueriesFile.length()) {
+				System.out.print(".");
+				Util.processTextFileChanges(queriesFile, executedQueriesFile, delimiter, tripleStoreUri);
+				System.out.println(".");
+				storeExperimentInfo(MODE);
+			}
 		}
 	}
 	

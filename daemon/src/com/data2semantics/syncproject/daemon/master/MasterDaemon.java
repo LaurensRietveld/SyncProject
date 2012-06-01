@@ -35,19 +35,13 @@ public class MasterDaemon {
 			System.out.println("Invalid option to run master daemon in");
 			System.exit(1);
 		}
-	    if (!srcFile.exists()) {
-	    	try {
-	    		System.out.println("File does not exist. Creating new file: " + srcFile.getPath());
-				srcFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
+		
 		while (true) {
-			rsync(srcFile, destFile);
+			if (srcFile.exists()) rsync(srcFile, destFile);
 			sleep(this.config.getInt("master.daemon.syncInterval"));
 		}
+	   
+		
 	}
 	
 	private void rsync(File srcFile, String destFile) {

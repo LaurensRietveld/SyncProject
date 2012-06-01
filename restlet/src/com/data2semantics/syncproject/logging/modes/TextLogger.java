@@ -32,12 +32,16 @@ public class TextLogger {
 	}
 	
 	public static void writeToFile(Logger logger, File file, String string) throws IOException {
+		FileWriter fw;
 		if(!file.exists()){
 	    	logger.warning("Log file does not existing. Creating one: " + file.getPath());
 	    	file.createNewFile();
+	    	fw = new FileWriter(file);
+	    } else {
+	    	fw = new FileWriter(file, true);
 	    }
 	    logger.info("Writing to file: " + string);
-	    FileWriter fw = new FileWriter(file, true);
+	    
 	    BufferedWriter bw = new BufferedWriter(fw);
 	    bw.write(string);
 	    bw.close();
