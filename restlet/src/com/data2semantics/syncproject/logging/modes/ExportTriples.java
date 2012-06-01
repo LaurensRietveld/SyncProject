@@ -2,6 +2,7 @@ package com.data2semantics.syncproject.logging.modes;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -14,11 +15,13 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 
 public class ExportTriples {
     public static void export(com.data2semantics.syncproject.resources.Query query, String endpoint, File exportFile) throws Exception{
-    	//Always create (or overwrite) new file
+    	//empty file if it exists (do not create new one: file permissions get screwed up"
     	if (exportFile.exists()) {
-    		exportFile.delete();
+            BufferedWriter bw = new BufferedWriter(new FileWriter(exportFile));
+            bw.write("");
+            bw.flush();
+            bw.close();
     	}
-		exportFile.createNewFile();
     	ResultSet result = query(endpoint, "SELECT * WHERE {?subject ?predicate ?object}");
     	query.getLogger().info("going to process query");
     	FileWriter fileWriter = new FileWriter(exportFile.getAbsolutePath(),true);
