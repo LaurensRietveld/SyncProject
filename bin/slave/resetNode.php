@@ -4,7 +4,8 @@
 	$config = getConfig();
 	echo "==== ".basename(__DIR__).": Resetting ====\n";
 	echo "\tquery log dir\n";
-	deleteDirContent($config['slave']['queryLogDir']);
+	shell_exec("echo '' > ".$config['slave']['queryLogDir']."/".$config['mode1']['updateFile']);
+	shell_exec("echo '' > ".$config['slave']['queryLogDir']."/".$config['mode1']['updateFile'].".old");
 	echo "\txml dump dir\n";
 	deleteDirContent($config['slave']['xmlDumpDir']);
 	echo "\tGIT dir (only pull. run master beforehand)\n";
