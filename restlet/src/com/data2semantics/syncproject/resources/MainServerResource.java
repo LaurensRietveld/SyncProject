@@ -70,7 +70,6 @@ public class MainServerResource extends ServerResource {
 	}
 	
 	protected Representation processGet() throws Exception {
-		initLogger();
 		Representation result = new EmptyRepresentation();
 		Map<String, Object> requestAttributes = getRequestAttributes();
 		boolean hasQuery = false;
@@ -79,6 +78,7 @@ public class MainServerResource extends ServerResource {
 			String parameters = (String) getRequestAttributes().get("param");
 			hasQuery = parseParams(new Form(parameters));
 		}
+		initLogger();
 		if (hasQuery) {
 			for (String queryString : this.queries) {
 				Query query = new Query(queryString, (MainServerResource)this);
@@ -93,9 +93,9 @@ public class MainServerResource extends ServerResource {
 	}
 	
 	protected Representation processPost(Representation entity) throws Exception {
-		initLogger();
 		Representation result = new EmptyRepresentation();
         boolean hasQuery = parseParams(new Form(entity));
+        initLogger();
         getLogger().info("Processing POST in mode " + Integer.toString(this.getMode()));
         if (hasQuery) {
         	for (String queryString: this.queries) {

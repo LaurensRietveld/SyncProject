@@ -19,15 +19,13 @@ public class LogQueriesGit extends GenericLogger{
 	
 	public LogQueriesGit(boolean batchLogging, MainServerResource main) throws IOException {
 		super(batchLogging, main);
-		
+		config = main.getApplication().getConfig();
 		gitPath = new File(config.getString("master.git.dir") + "/" + config.getString("master.git.repoDir"));
 		if (!gitPath.exists() || !gitPath.canExecute()) {
 			throw new IOException("Git dir does not exist, or cannot execute");
 		}
 		logFile = new File(gitPath.getAbsolutePath() + "/" + config.getString("queryLogMode.updateFile"));
 		
-		
-		config = main.getApplication().getConfig();
 		//Set push command
 		String[] pushCmd = new String[]{"git", "push"};
 		gitPush = new ProcessBuilder(pushCmd);
