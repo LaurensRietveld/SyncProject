@@ -1,6 +1,5 @@
 package com.data2semantics.syncproject.resources;
 
-import java.io.IOException;
 import java.util.Map;
 import org.restlet.data.Form;
 import org.restlet.representation.EmptyRepresentation;
@@ -117,7 +116,7 @@ public class MainServerResource extends ServerResource {
 		this.sparqlQueryType = sparqlQueryType;
 	}
 	
-	protected void initLogger() throws NoSuchFieldException, IOException {
+	protected void initLogger() throws Exception {
 		switch (mode) {
 	        case GenericLogger.LOG_QUERIES_RSYNC:
 	        	queryLogger = new LogQueriesRsync(batchLogging, this);
