@@ -1,4 +1,4 @@
-package com.data2semantics.syncproject.daemon.slave.util;
+package com.data2semantics.syncproject.daemon.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

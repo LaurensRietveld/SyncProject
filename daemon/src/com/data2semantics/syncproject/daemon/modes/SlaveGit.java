@@ -1,4 +1,4 @@
-package com.data2semantics.syncproject.daemon.slave.modes;
+package com.data2semantics.syncproject.daemon.modes;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import com.data2semantics.syncproject.daemon.slave.util.Util;
+import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
 public class SlaveGit extends SlaveMode implements ModeInterface {

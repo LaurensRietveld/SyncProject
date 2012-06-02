@@ -1,9 +1,10 @@
-package com.data2semantics.syncproject.daemon.slave.modes;
+package com.data2semantics.syncproject.daemon.modes;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import com.data2semantics.syncproject.daemon.slave.util.Util;
+
+import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
 public class SlaveImportDump extends SlaveMode implements ModeInterface {

@@ -1,4 +1,4 @@
-package com.data2semantics.syncproject.daemon.slave.modes;
+package com.data2semantics.syncproject.daemon.modes;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -8,7 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import com.data2semantics.syncproject.daemon.slave.util.Util;
+
+import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
 public class SlaveDb extends SlaveMode implements ModeInterface {

@@ -1,10 +1,7 @@
-package com.data2semantics.syncproject.daemon.slave.modes;
+package com.data2semantics.syncproject.daemon.modes;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import com.data2semantics.syncproject.daemon.slave.util.Util;
+import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
 public class SlaveTextQuery extends SlaveMode implements ModeInterface {

@@ -1,4 +1,4 @@
-package com.data2semantics.syncproject.daemon.slave.modes;
+package com.data2semantics.syncproject.daemon.modes;
 
 import java.net.UnknownHostException;
 import java.sql.Connection;

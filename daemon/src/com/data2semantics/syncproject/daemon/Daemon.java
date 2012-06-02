@@ -10,8 +10,11 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import com.data2semantics.syncproject.daemon.master.MasterDaemon;
-import com.data2semantics.syncproject.daemon.slave.SlaveDaemon;
+
+import com.data2semantics.syncproject.daemon.modes.SlaveDb;
+import com.data2semantics.syncproject.daemon.modes.SlaveGit;
+import com.data2semantics.syncproject.daemon.modes.SlaveImportDump;
+import com.data2semantics.syncproject.daemon.modes.SlaveTextQuery;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -20,26 +23,20 @@ public class Daemon {
 	private URL configFile;
 	private Config config;
 	private int mode;
-	private String role;
-	Daemon (String role, int mode) {
+	Daemon (int mode) {
 		this.mode = mode;
-		this.role = role;
 	}
 	
-	public void initDaemon() {
+	public void initDaemon()throws Exception {
 		this.loadConfigFile();
-		try {
-			if (this.role.equals("slave")) {
-				new SlaveDaemon(config, mode);
-			} else if (this.role.equals("master")) {
-				new MasterDaemon(config, mode);
-			} else {
-				System.out.println("No valid role passed as parameter: " + this.role);
-				System.exit(1);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(1);
+		if (mode == SlaveGit.MODE) {
+			new SlaveGit(config);
+		} else if (mode == SlaveTextQuery.MODE) {
+			new SlaveTextQuery(config);
+		} else if (mode == SlaveImportDump.MODE) {
+			new SlaveImportDump(config);
+		} else if (mode == SlaveDb.MODE) {
+			new SlaveDb(config);
 		}
 	}
 	
@@ -65,7 +62,6 @@ public class Daemon {
 	public static void main(String[] args) {
 		Options options = new Options();
 		options.addOption(new Option("help", "print this message"));
-		options.addOption(OptionBuilder.withArgName("role").hasArg().withDescription("Role to run in, either 'master' or 'slave'").create("role"));
 		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Mode to run: (1) sync text queries; (2) use DB; (3) sync graph; (4) central (git) server").create("mode"));
 		
 		CommandLineParser parser = new GnuParser();
@@ -84,11 +80,6 @@ public class Daemon {
     		System.exit(0);
         }
         
-	    if (!commands.hasOption("role")) {
-	    	System.out.println("No role passed as parameter");
-	    	System.exit(1);
-	    }
-        String role = commands.getOptionValue("role");
         int mode = 0;
 	    if (!commands.hasOption("mode")) {
 	    	System.out.println("No mode passed as parameter");
@@ -100,9 +91,13 @@ public class Daemon {
 	    		System.exit(1);
 	    	}
 	    }
-        Daemon daemon = new Daemon(role, mode);
+        Daemon daemon = new Daemon(mode);
         
-		daemon.initDaemon();
+		try {
+			daemon.initDaemon();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
