@@ -8,6 +8,11 @@
 	if (!$db) die('Could not connect: ' . mysql_error());
 	mysql_select_db("Experiments");
 	
+	
+	
+	doPost("http://localhost:9080/syncRestlet/update", array("queries" => array("query1", "query2")));
+	exit;
+	
 	//Time to wait between runs for each mode. Setting it too short means runs (daemons) will overlap and skew the experiments
 	$waitingTimes = array(
 		1 => 20,

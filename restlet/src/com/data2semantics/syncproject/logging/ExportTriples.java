@@ -1,10 +1,11 @@
-package com.data2semantics.syncproject.logging.modes;
+package com.data2semantics.syncproject.logging;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
+import com.data2semantics.syncproject.resources.MainServerResource;
+import com.data2semantics.syncproject.util.QueryTypes;
 import com.data2semantics.syncproject.util.Util;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -16,25 +17,41 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.typesafe.config.Config;
 
 
-public class ExportTriples {
+public class ExportTriples extends GenericLogger{
 	
+	public ExportTriples(boolean batchLogging, MainServerResource main) {
+		super(batchLogging, main);
+	}
 	
-    public static void export(com.data2semantics.syncproject.resources.Query query, String endpoint, File exportFile) throws Exception{
-    	//empty file if it exists (do not create new one: file permissions get screwed up)
-    	if (exportFile.exists()) {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(exportFile));
-            bw.write("");
-            bw.flush();
-            bw.close();
-    	}
-    	ResultSet result = query(endpoint, "SELECT * WHERE {?subject ?predicate ?object}");
-    	query.getLogger().info("going to process query and write all results to file");
-    	
-    	writeResultToFile(result, exportFile);
-    	Config config = query.getConfig();
-    	String destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.xmlDumpDir") + "/" + config.getString("mode3.dumpFile");
-    	Util.rsync(exportFile, destFile);
+
+    public void log(com.data2semantics.syncproject.resources.Query query) throws Exception {
+    	//Do nothing. No need to perform logging for each query, as the query itself is not logged.
     }
+    
+    
+	public void loggingCallback() throws Exception {
+		//No need to export when data hasnt changed (i.e. only on update)
+		if (getMain().getSparqlQueryType() == QueryTypes.UPDATE) {
+			Config config = getMain().getApplication().getConfig();
+			
+	    	String endpoint = config.getString("master.tripleStore.selectUri");
+			File exportFile = new File(config.getString("master.xmlDumpDir") + "/" + config.getString("mode3.dumpFile"));
+	    	//empty file if it exists (do not create new one: file permissions get screwed up)
+	    	if (exportFile.exists()) {
+	            BufferedWriter bw = new BufferedWriter(new FileWriter(exportFile));
+	            bw.write("");
+	            bw.flush();
+	            bw.close();
+	    	}
+	    	ResultSet result = query(endpoint, "SELECT * WHERE {?subject ?predicate ?object}");
+	    	getMain().getLogger().info("going to process query and write all results to file");
+	    	
+	    	writeResultToFile(result, exportFile);
+	    	String destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.xmlDumpDir") + "/" + config.getString("mode3.dumpFile");
+	    	Util.rsync(exportFile, destFile);
+		}
+	}
+    
     
 	/**
 	 * Execute query
@@ -44,14 +61,14 @@ public class ExportTriples {
 	 * 
 	 * @return ResultSet
 	 */
-	private static ResultSet query(String endpoint, String queryString) {
+	private ResultSet query(String endpoint, String queryString) {
 		Query query = QueryFactory.create(queryString);
 		QueryExecution queryExecution = QueryExecutionFactory.sparqlService(endpoint, query);
 		ResultSet results = queryExecution.execSelect();
 		return results;
 	}
 	
-	private static void writeResultToFile(ResultSet result, File exportFile) throws IOException {
+	private void writeResultToFile(ResultSet result, File exportFile) throws IOException {
 		FileWriter fileWriter = new FileWriter(exportFile.getAbsolutePath(),true);
         BufferedWriter bufferWritter = new BufferedWriter(fileWriter);
     	while (result.hasNext()) {
@@ -71,7 +88,7 @@ public class ExportTriples {
 	 * @param rdfNode
 	 * @return
 	 */
-	private static String getString(RDFNode rdfNode) {
+	private String getString(RDFNode rdfNode) {
 		String result = "";
 		if (rdfNode.isLiteral()) {
 			result = rdfNode.toString();

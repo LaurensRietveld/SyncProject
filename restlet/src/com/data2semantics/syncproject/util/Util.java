@@ -1,8 +1,13 @@
 package com.data2semantics.syncproject.util;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import org.restlet.data.MediaType;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.representation.Representation;
@@ -41,5 +46,21 @@ public class Util  {
             throw new Exception("Exception during RSync; return code = " + val);
         }
 
+	}
+	
+	public static void writeToFile(Logger logger, File file, String string) throws IOException {
+		FileWriter fw;
+		if(!file.exists()){
+	    	logger.warning("Log file does not existing. Creating one: " + file.getPath());
+	    	file.createNewFile();
+	    	fw = new FileWriter(file);
+	    } else {
+	    	fw = new FileWriter(file, true);
+	    }
+	    logger.info("Writing to file: " + string);
+	    
+	    BufferedWriter bw = new BufferedWriter(fw);
+	    bw.write(string);
+	    bw.close();
 	}
 }

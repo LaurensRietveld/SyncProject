@@ -1,9 +1,6 @@
 package com.data2semantics.syncproject;
 
 
-import java.io.IOException;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import freemarker.template.Configuration;
 import org.restlet.Application;
 import org.restlet.Request;
@@ -19,7 +16,6 @@ import com.data2semantics.syncproject.resources.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-
 public class EntryPoint extends Application {
 	private Configuration fmConfiguration; //Freemarker Configuration
 	private Config config;//Typesafe config
@@ -31,17 +27,6 @@ public class EntryPoint extends Application {
 	 */
 	@Override
 	public synchronized Restlet createInboundRoot() {
-		Handler fileHandler = null;
-		try {
-			fileHandler = new FileHandler("/usr/local/share/syncProject/logs/temp.txt");
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		getLogger().addHandler(fileHandler);
 		getLogger().severe("In entrypoint");
 		loadConfigurations();
 		// Create a router Restlet that routes each call

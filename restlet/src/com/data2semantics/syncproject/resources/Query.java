@@ -20,7 +20,6 @@ import org.restlet.data.Protocol;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
-import com.data2semantics.syncproject.logging.QueryLog;
 import com.data2semantics.syncproject.util.QueryTypes;
 import com.data2semantics.syncproject.util.Util;
 import com.typesafe.config.Config;
@@ -40,7 +39,6 @@ public class Query {
 	}
 	
 	private Representation executePOSTQuery(String uri) throws Exception {
-		
 		/*TODO: Execution does not work with restlet somehow.. 
 		Therefore, use the http commons stuff. Should find out whether this was a restlet bug, or
 		Form form = new Form();
@@ -64,7 +62,9 @@ public class Query {
 		post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
  
 		HttpResponse response = client.execute(post);
-		QueryLog.log(this);
+		main.getQueryLogger().log(this);
+		if (!main.getQueryLogger().useBatchLogging()) main.getQueryLogger().loggingCallback();
+		
 		BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		String line = "";
 		String queryResult = "";
@@ -144,7 +144,8 @@ public class Query {
 		resource.setNext(new Client(new Context(), Protocol.HTTP));
 		Representation result = null;
 		result = resource.get(responseMediaType);
-		QueryLog.log(this);
+		main.getQueryLogger().log(this);
+		if (!main.getQueryLogger().useBatchLogging()) main.getQueryLogger().loggingCallback();
 		if (result == null) {
 			result = new StringRepresentation(queryResult, responseMediaType);
 		}

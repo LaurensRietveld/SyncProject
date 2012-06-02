@@ -30,7 +30,7 @@ function doPost($uri, $fields) {
 	foreach($fields as $key => $value) {
 		if (is_array($value)) {
 			foreach ($value as $subValue)
-			$fields_string .= $key.'[]='.$subValue.'&';
+			$fields_string .= $key.'='.$subValue.'&';
 			
 		} else {
 			$fields_string .= $key.'='.$value.'&';

@@ -1,16 +1,21 @@
-package com.data2semantics.syncproject.logging.modes;
+package com.data2semantics.syncproject.logging;
 
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import com.typesafe.config.Config;
+import com.data2semantics.syncproject.resources.MainServerResource;
 import com.data2semantics.syncproject.resources.Query;
 import java.sql.SQLException;
 import java.io.IOException;
 
-public class DbLogger {
+public class DbLogger extends GenericLogger{
 
+	public DbLogger(boolean batchLogging, MainServerResource main) {
+		super(batchLogging, main);
+	}
+	
 	/**
 	 * Log a query. This only occurs when query is executed on server. However, the query may have failed! 
 	 * TODO: check whether query response contains errors. If so, probably do not store (or store separately)..
@@ -21,7 +26,7 @@ public class DbLogger {
 	 * @throws SQLException 
 	 * @throws ClassNotFoundException 
 	 */
-	public static void log(Query query) throws IOException, SQLException, ClassNotFoundException {
+	public void log(Query query) throws IOException, SQLException, ClassNotFoundException {
 		Config config = query.getConfig();
 
 		// This will load the MySQL driver, each DB has its own driver
@@ -38,5 +43,9 @@ public class DbLogger {
 		preparedStatement.executeUpdate();
 		query.getLogger().info("executed DB query");
 		connect.close();
+	}
+	
+	public void loggingCallback() {
+		//Do nothing. The callback function is essentially done by mysql, which already replicates the data to the slave
 	}
 }
