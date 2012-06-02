@@ -21,17 +21,17 @@ public class SlaveGit extends SlaveMode implements ModeInterface {
 //	ProcessBuilder gitCommit;
 	public SlaveGit(Config config) throws Exception {
 		super(config);
-		this.gitPath = new File(config.getString("slave.gitDir") + "/" + config.getString("mode4.repoDir"));
+		this.gitPath = new File(config.getString("slave.git.dir") + "/" + config.getString("slave.git.repoDir"));
 		if (!gitPath.exists()) {
 			throw new IOException("Git path does not exist: " + gitPath.getAbsolutePath());
 		}
-		this.executedQueries = new File(config.getString("slave.gitDir") + "/" + config.getString("mode4.executedQueries"));
+		this.executedQueries = new File(config.getString("slave.git.dir") + "/" + config.getString("queryLogMode.executedQueriesFile"));
 		if (!executedQueries.exists()) {
 			System.out.println("File to store executed queries in does not exist. Making one.");
 			executedQueries.createNewFile();
 		}
-		this.queriesFile = new File(gitPath.getAbsoluteFile() + "/" + config.getString("mode4.updateFile"));
-		delimiter = config.getString("mode1.queryDelimiter");
+		this.queriesFile = new File(gitPath.getAbsoluteFile() + "/" + config.getString("queryLogMode.updateFile"));
+		delimiter = config.getString("queryLogMode.queryDelimiter");
 		tripleStoreUri = config.getString("slave.tripleStore.updateUri");
 		
 		//Set pull command

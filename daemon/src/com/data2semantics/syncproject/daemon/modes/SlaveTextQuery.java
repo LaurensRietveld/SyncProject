@@ -16,9 +16,9 @@ public class SlaveTextQuery extends SlaveMode implements ModeInterface {
 		
 		
 		//this.initPreparedStatements();
-		queriesFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("mode1.updateFile"));
-		executedQueriesFile = new File(queriesFile.getAbsolutePath() + ".old");
-		delimiter = config.getString("mode1.queryDelimiter");
+		queriesFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.updateFile"));
+		executedQueriesFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.executedQueriesFile"));
+		delimiter = config.getString("queryLogMode.queryDelimiter");
 		tripleStoreUri = config.getString("slave.tripleStore.updateUri");
 		runDaemon();
 	}

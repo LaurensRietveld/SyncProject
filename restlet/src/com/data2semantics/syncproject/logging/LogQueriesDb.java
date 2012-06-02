@@ -10,9 +10,9 @@ import com.data2semantics.syncproject.resources.Query;
 import java.sql.SQLException;
 import java.io.IOException;
 
-public class DbLogger extends GenericLogger{
+public class LogQueriesDb extends GenericLogger{
 
-	public DbLogger(boolean batchLogging, MainServerResource main) {
+	public LogQueriesDb(boolean batchLogging, MainServerResource main) {
 		super(batchLogging, main);
 	}
 	

@@ -14,7 +14,7 @@ public class SlaveImportDump extends SlaveMode implements ModeInterface {
 	private long fileLastModified = 0;
 	public SlaveImportDump(Config config) throws Exception {
 		super(config);
-		this.dumpFile = new File(config.getString("slave.xmlDumpDir") + "/" + config.getString("mode3.dumpFile"));
+		this.dumpFile = new File(config.getString("slave.serializationDir") + "/" + config.getString("serializationMode.dumpFile"));
 		this.updateUri = config.getString("slave.tripleStore.updateUri");
 		runDaemon();
 	}

@@ -1,16 +1,14 @@
 package com.data2semantics.syncproject.resources;
 
+import java.io.IOException;
 import java.util.Map;
 import org.restlet.data.Form;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ServerResource;
 import com.data2semantics.syncproject.EntryPoint;
-import com.data2semantics.syncproject.logging.ExportTriples;
-import com.data2semantics.syncproject.logging.GenericLogger;
-import com.data2semantics.syncproject.logging.TextLogger;
+import com.data2semantics.syncproject.logging.*;
 import com.data2semantics.syncproject.util.Util;
-
 
 /**
  * Resource which has only one representation.
@@ -119,20 +117,26 @@ public class MainServerResource extends ServerResource {
 		this.sparqlQueryType = sparqlQueryType;
 	}
 	
-	protected void initLogger() throws NoSuchFieldException {
+	protected void initLogger() throws NoSuchFieldException, IOException {
 		switch (mode) {
-	        case GenericLogger.PLAIN_TEXT_FILE:
-	        	queryLogger = new TextLogger(batchLogging, this);
+	        case GenericLogger.LOG_QUERIES_RSYNC:
+	        	queryLogger = new LogQueriesRsync(batchLogging, this);
 	        	break;
-	        case GenericLogger.EXPORT_GRAPHS:
-	        	queryLogger = new ExportTriples(batchLogging, this);
+	        case GenericLogger.SERIALIZE_GRAPH_RSYNC:
+	        	queryLogger = new SerializeGraphRsync(batchLogging, this);
 	        	break;
-	        case GenericLogger.DB:
-	        	queryLogger = new ExportTriples(batchLogging, this);
+	        case GenericLogger.LOG_QUERIES_DB:
+	        	queryLogger = new LogQueriesDb(batchLogging, this);
 	        	break;
-	        case GenericLogger.CENTRAL_SERVER:
-	        	queryLogger = new ExportTriples(batchLogging, this);
+	        case GenericLogger.LOG_QUERIES_GIT:
+	        	queryLogger = new LogQueriesGit(batchLogging, this);
 	        	break;
+	        case GenericLogger.SERIALIZE_GRAPH_GIT:
+	        	queryLogger = new SerializeGraphGit(batchLogging, this);
+	        	break;
+	        case GenericLogger.SERIALIZE_GRAPH_DB:
+	        	queryLogger = new SerializeGraphDb(batchLogging, this);
+	        	break;   	
 	    	default:
 	    		throw new NoSuchFieldException("ERROR: No valid logtype provided");
 	    }

@@ -3,15 +3,9 @@
 	include(__DIR__."/../util.php");
 	$config = getConfig();
 	echo "==== ".basename(__DIR__).": Resetting ====\n";
-// 	echo "\tjava log dir\n";
-// 	deleteDirContent("/usr/local/share/syncProject/logs");
-// 	`echo "" > /usr/local/share/syncProject/logs/placeholder`;
 	echo "\tquery log dir\n";
-	//deleteDirContent($config['master']['queryLogDir']);
 	shell_exec("echo '' > ".$config['master']['queryLogDir']."/".$config['queryLogMode']['updateFile']);
 	echo "\txml dump dir\n";
-	//`echo "" > /usr/local/share/syncProject/xmlDump/dump.xml`;
-	//`chmod 777 /usr/local/share/syncProject/xmlDump/dump.xml`;
 	shell_exec("echo '' > ".$config['master']['serializationDir']."/".$config['serializationMode']['dumpFile']);
 	echo "\tGIT dir (incl push/commit)\n";
 	$gitDir = $config['master']['git']['dir']."/".$config['master']['git']['repoDir'];

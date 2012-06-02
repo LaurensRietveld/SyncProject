@@ -89,10 +89,12 @@ body {
 		<!--<form action="${action}" method="POST">-->
 			<textarea id="query" name="query" rows="16" cols="80"></textarea><br>
 			<select id="mode" name="mode">
-			  <option value="1">Store queries as text files</option>
-			  <option value="2">Store queries in DB</option>
-			  <option value="3">Serialize graphs</option>
-			  <option value="4">Use central server (i.e. GIT)</option>
+			  <option value="1">Log queries (rsync)</option>
+			  <option value="2">Log queries (DB)</option>
+			  <option value="3">Serialize graph (rsync)</option>
+			  <option value="4">Log queries (GIT)</option>
+			  <option value="5">Serialize graph (git)</option>
+			  <option value="6">Serialize graph (DB)</option>
 			</select><br>
 			<input type="submit" value="Execute"/>
 		</form>

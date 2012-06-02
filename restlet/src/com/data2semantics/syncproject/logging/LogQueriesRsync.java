@@ -7,21 +7,21 @@ import com.data2semantics.syncproject.resources.Query;
 import com.data2semantics.syncproject.util.Util;
 import com.typesafe.config.Config;
 
-public class TextLogger extends GenericLogger{
+public class LogQueriesRsync extends GenericLogger{
 	private String destFile;
 	private File logFile;
 	private String delimiter;
-	public TextLogger(boolean batchLogging, MainServerResource main) {
+	public LogQueriesRsync(boolean batchLogging, MainServerResource main) {
 		super(batchLogging, main);
 		Config config = main.getApplication().getConfig();
-		destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.queryLogDir") + "/" + config.getString("mode1.updateFile");
-		delimiter = config.getString("mode1.queryDelimiter");
+		destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.updateFile");
+		delimiter = config.getString("queryLogMode.queryDelimiter");
 		
 		String logFileName = config.getString("master.queryLogDir") + "/";
 		if (getMain().getSparqlQueryType().equals("update")) {
-			logFileName += config.getString("mode1.updateFile");
+			logFileName += config.getString("queryLogMode.updateFile");
 		} else {
-			logFileName += config.getString("mode1.queryFile");
+			logFileName += config.getString("queryLogMode.queryFile");
 		}
 		logFile = new File(logFileName);
 	}
@@ -35,7 +35,7 @@ public class TextLogger extends GenericLogger{
 	 * @throws Exception 
 	 */
 	public void log(Query query) throws Exception {
-		Util.writeToFile(query.getMain().getLogger(), logFile, delimiter + query.getSparqlQuery());
+		Util.writeQueryToFile(query.getMain().getLogger(), logFile, delimiter + query.getSparqlQuery());
 	}
 	
 	public void loggingCallback() throws Exception {

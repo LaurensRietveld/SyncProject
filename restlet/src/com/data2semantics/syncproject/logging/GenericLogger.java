@@ -6,10 +6,12 @@ import com.data2semantics.syncproject.resources.Query;
 public class GenericLogger {
 	private boolean batchLogging;
 	private MainServerResource main;
-	public static final int PLAIN_TEXT_FILE = 1;
-	public static final int DB = 2;
-	public static final int EXPORT_GRAPHS = 3;
-	public static final int CENTRAL_SERVER = 4;
+	public static final int LOG_QUERIES_RSYNC = 1;
+	public static final int LOG_QUERIES_DB = 2;
+	public static final int SERIALIZE_GRAPH_RSYNC = 3;
+	public static final int LOG_QUERIES_GIT = 4;
+	public static final int SERIALIZE_GRAPH_GIT = 5;
+	public static final int SERIALIZE_GRAPH_DB = 6;
 	
 	public GenericLogger(boolean batchLogging, MainServerResource main) {
 		this.batchLogging = batchLogging;
