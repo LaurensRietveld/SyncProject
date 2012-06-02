@@ -17,7 +17,7 @@
 	echo "\tDB\n";
 	$db = mysql_connect("localhost:3306", "syncProject");
 	if (!$db) die('Could not connect: ' . mysql_error());
-	mysql_select_db("QueryLog");
+	mysql_select_db("SyncProject");
 	mysql_query("TRUNCATE TABLE `QueryLog`");
 	
 	echo "\ttriple store\n";
