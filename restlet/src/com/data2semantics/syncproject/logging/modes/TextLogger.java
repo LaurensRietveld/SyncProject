@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import com.data2semantics.syncproject.resources.Query;
+import com.data2semantics.syncproject.util.Util;
 import com.typesafe.config.Config;
 
 public class TextLogger {
@@ -17,9 +18,9 @@ public class TextLogger {
 	 * 
 	 * @param query Query String
 	 * @param queryType Type of query, either select or update
-	 * @throws IOException 
+	 * @throws Exception 
 	 */
-	public static void log(Query query) throws IOException {
+	public static void log(Query query) throws Exception {
 		Config config = query.getApplication().getConfig();
 		String filename = config.getString("master.queryLogDir") + "/";
 		if (query.getSparqlQueryType().equals("update")) {
@@ -29,6 +30,8 @@ public class TextLogger {
 		}
 		File file = new File(filename);
 		writeToFile(query.getLogger(), file, config.getString("mode1.queryDelimiter") + query.getSparqlQuery());
+		File destFile = new File(config.getString("slave.serverLocation") + ":" + config.getString("slave.queryLogDir") + "/" + config.getString("mode1.updateFile"));
+		Util.rsync(file, destFile);
 	}
 	
 	public static void writeToFile(Logger logger, File file, String string) throws IOException {
