@@ -27,8 +27,14 @@ function getConfig() {
 function doPost($uri, $fields) {
 	//url-ify the data for the POST
 	$fields_string = "";
-	foreach($fields as $key=>$value) {
-		$fields_string .= $key.'='.$value.'&';
+	foreach($fields as $key => $value) {
+		if (is_array($value)) {
+			foreach ($value as $subValue)
+			$fields_string .= $key.'[]='.$subValue.'&';
+			
+		} else {
+			$fields_string .= $key.'='.$value.'&';
+		}
 	}
 	rtrim($fields_string,'&');
 	//$fields_string = http_build_query($fields);
@@ -42,14 +48,34 @@ function doPost($uri, $fields) {
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	//curl_setopt($ch, CURLOPT_MUTE, "true");
 
-// 	exit;
 	$result = curl_exec($ch);
 	if (strpos($result, "Exception")) {
-		echo "==== Exception in result ====\n".$result;
-		exit;
+		showException($result);
 	}
 	//close connection
 	curl_close($ch);
+}
+
+/**
+ * Get result from html page, get exception part of the page, and parse it without html encodings
+ * 
+ * @param String $result
+ */
+function showException($result) {
+	echo "==== Exception in result ====\n";
+	$needle = "ERROR</div>";
+	$startPos = strpos($result, $needle) + strlen($needle);
+	
+	$needle = "</div>";
+	$endPos = strpos($result, $needle, $startPos);
+	
+	$result = substr($result, $startPos, ($endPos - $startPos));
+	
+	$result = trim($result);
+	$result = str_replace("&nbsp;", " ", $result);
+	$result = str_replace("<br>", "\n", $result);
+	echo $result;
+	exit;
 }
 
 function executeQueries($uri, $queries, $mode) {
