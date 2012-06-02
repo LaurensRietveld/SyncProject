@@ -32,7 +32,7 @@ public class ExportTriples {
     	
     	writeResultToFile(result, exportFile);
     	Config config = query.getApplication().getConfig();
-    	File destFile = new File(config.getString("slave.serverLocation") + ":" + config.getString("slave.xmlDumpDir") + "/" + config.getString("mode3.dumpFile"));
+    	String destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.xmlDumpDir") + "/" + config.getString("mode3.dumpFile");
     	Util.rsync(exportFile, destFile);
     }
     

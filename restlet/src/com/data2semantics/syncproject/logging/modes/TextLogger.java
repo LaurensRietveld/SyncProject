@@ -30,7 +30,7 @@ public class TextLogger {
 		}
 		File file = new File(filename);
 		writeToFile(query.getLogger(), file, config.getString("mode1.queryDelimiter") + query.getSparqlQuery());
-		File destFile = new File(config.getString("slave.serverLocation") + ":" + config.getString("slave.queryLogDir") + "/" + config.getString("mode1.updateFile"));
+		String destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.queryLogDir") + "/" + config.getString("mode1.updateFile");
 		Util.rsync(file, destFile);
 	}
 	

@@ -6,9 +6,7 @@ import java.util.Map;
 import org.restlet.data.MediaType;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.representation.Representation;
-
 import com.data2semantics.syncproject.EntryPoint;
-
 import freemarker.template.Configuration;
 
 public class Util  {
@@ -33,9 +31,9 @@ public class Util  {
 		return new TemplateRepresentation("error.ftl", configuration, map, MediaType.TEXT_HTML);
 	}
 	
-	public static void rsync(File srcFile, File destFile) throws Exception {
+	public static void rsync(File srcFile, String destFile) throws Exception {
 		// Currently uses passwordless SSH keys to login
-        String[] cmd = new String[]{"rsync", "-a", srcFile.getAbsolutePath(), destFile.getAbsolutePath()};
+        String[] cmd = new String[]{"rsync", "-a", srcFile.getAbsolutePath(), destFile};
         ProcessBuilder pb = new ProcessBuilder(cmd);
         Process process = pb.start();
         int val = process.waitFor();
