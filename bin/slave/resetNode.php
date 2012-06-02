@@ -4,15 +4,15 @@
 	$config = getConfig();
 	echo "==== ".basename(__DIR__).": Resetting ====\n";
 	echo "\tquery log dir\n";
-	shell_exec("echo '' > ".$config['slave']['queryLogDir']."/".$config['mode1']['updateFile']);
-	shell_exec("echo '' > ".$config['slave']['queryLogDir']."/".$config['mode1']['updateFile'].".old");
+	shell_exec("echo '' > ".$config['slave']['queryLogDir']."/".$config['queryLogMode']['updateFile']);
+	shell_exec("echo '' > ".$config['slave']['queryLogDir']."/".$config['queryLogMode']['executedQueriesFile']);
 	echo "\txml dump dir\n";
-	deleteDirContent($config['slave']['xmlDumpDir']);
+	deleteDirContent($config['slave']['serializationDir']);
 	echo "\tGIT dir (only pull. run master beforehand)\n";
-	$gitDir = $config['slave']['gitDir']."/".$config['mode4']['repoDir'];
+	$gitDir = $config['slave']['git']['dir']."/".$config['slave']['git']['repoDir'];
 	`cd $gitDir; git pull -q;`;
 	echo "\texecuted query log file\n";
-	$executedQueries = $config['slave']['gitDir']."/".$config['mode4']['executedQueries'];
+	$executedQueries = $config['slave']['git']['dir']."/".$config['queryLogMode']['executedQueriesFile'];
 	if (file_exists($executedQueries)) {
 		unset($executedQueries);
 	}

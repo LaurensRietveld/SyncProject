@@ -8,14 +8,13 @@
 // 	`echo "" > /usr/local/share/syncProject/logs/placeholder`;
 	echo "\tquery log dir\n";
 	//deleteDirContent($config['master']['queryLogDir']);
-	shell_exec("echo '' > ".$config['master']['queryLogDir']."/".$config['mode1']['updateFile']);
+	shell_exec("echo '' > ".$config['master']['queryLogDir']."/".$config['queryLogMode']['updateFile']);
 	echo "\txml dump dir\n";
-	//deleteDirContent($config['master']['xmlDumpDir']);
 	//`echo "" > /usr/local/share/syncProject/xmlDump/dump.xml`;
 	//`chmod 777 /usr/local/share/syncProject/xmlDump/dump.xml`;
-	shell_exec("echo '' > ".$config['master']['xmlDumpDir']."/".$config['mode3']['dumpFile']);
+	shell_exec("echo '' > ".$config['master']['serializationDir']."/".$config['serializationMode']['dumpFile']);
 	echo "\tGIT dir (incl push/commit)\n";
-	$gitDir = $config['master']['gitDir']."/".$config['mode4']['repoDir'];
+	$gitDir = $config['master']['git']['dir']."/".$config['master']['git']['repoDir'];
 	foreach (scandir($gitDir) as $item) {
 		if ($item == '.' || $item == '..' || $item == '.git') continue;
 		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
