@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -18,98 +20,25 @@ import org.restlet.data.Protocol;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
-import org.restlet.resource.ServerResource;
-import com.data2semantics.syncproject.EntryPoint;
 import com.data2semantics.syncproject.logging.QueryLog;
 import com.data2semantics.syncproject.util.QueryTypes;
 import com.data2semantics.syncproject.util.Util;
+import com.typesafe.config.Config;
 
-/**
- * Resource which has only one representation.
- * 
- */
-public class Query extends ServerResource {
+public class Query {
 	private String sparqlQuery;
-	private String sparqlQueryType;
-	//TODO: How to fix these media types... Results from sesame endpoint are still messed up: they are xml, but with a wrong xsl tag or something
 	private MediaType responseMediaType = MediaType.APPLICATION_SPARQL_RESULTS_XML;
-//	private MediaType responseMediaType = MediaType.APPLICATION_SPARQL_RESULTS_JSON;
-	private int mode = 1;
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.restlet.resource.Resource#getApplication()
-	 */
-	@Override
-	public EntryPoint getApplication() {
-		return (EntryPoint) super.getApplication();
-	}
+	private Config config;
+	private MainServerResource main;
+	private Logger logger;
 	
-	/**
-	 * Execute query and return result in representation object. If query is empty, the query form is returned
-	 * 
-	 * @param sparqlQuery
-	 * @return
-	 * @throws Exception 
-	 */
-	public Representation processQuery(String sparqlQuery, String sparqlQueryType) throws Exception {
+	public Query(String sparqlQuery, MainServerResource main) {
 		this.sparqlQuery = sparqlQuery;
-		this.sparqlQueryType = sparqlQueryType;
-		Representation result;
-        if (sparqlQuery == null || sparqlQuery.length() > 0) {
-        	getLogger().info("executing query");
-        	result = this.executeQuery();
-		} else {
-			getLogger().info("no query to executy. Loading query form");
-			result = Util.getQueryForm(getApplication(), false, getReference().toString());
-		}
-        return result;
+		config = main.getApplication().getConfig();
+		logger = main.getLogger();
+		this.main = main;
 	}
 	
-	/**
-	 * Execute query (and log) query
-	 * 
-	 * @return Representation containing query result
-	 * @throws Exception 
-	 */
-	private Representation executeQuery() throws Exception {
-		String uri;
-    	if (sparqlQueryType == QueryTypes.SELECT) {
-    		uri = getApplication().getConfig().getString("master.tripleStore.selectUri");
-    	} else {
-    		uri = getApplication().getConfig().getString("master.tripleStore.updateUri");
-    	}
-    	Representation queryResult;
-    	if (sparqlQueryType == QueryTypes.SELECT && this.sparqlQuery.length() < 2000) {
-    		queryResult = executeGETQuery(uri);
-    	} else {
-    		//queryResult = executeGETQuery(uri);
-    		queryResult = executePOSTQuery(uri);
-    		
-    	}
-    	return queryResult;
-	}
-	
-	private Representation executeGETQuery(String uri) throws Exception {
-		String queryResult = "";
-		ClientResource resource = new ClientResource(uri + "?" + sparqlQueryType + "=" + sparqlQuery + "&Accept=" + responseMediaType.getName());  
-		resource.setNext(new Client(new Context(), Protocol.HTTP));
-		Representation result = null;
-		result = resource.get(responseMediaType);
-		QueryLog.log(this);
-		if (result == null) {
-			result = new StringRepresentation(queryResult, responseMediaType);
-		}
-		//The restlet is having memory leaks. This might solve this issue
-		//(http://restlet-discuss.1400322.n2.nabble.com/resource-leak-after-Post-quot-form-quot-td7186110.html)
-		resource.release();
-		resource.getResponse().getEntity().exhaust(); 
-		
-		
-		return result;
-	}
-	
-
 	private Representation executePOSTQuery(String uri) throws Exception {
 		
 		/*TODO: Execution does not work with restlet somehow.. 
@@ -131,7 +60,7 @@ public class Query extends ServerResource {
 		HttpPost post = new HttpPost(uri);
 		post.addHeader("Content-type", "application/x-www-form-urlencoded");
 		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-		nameValuePairs.add(new BasicNameValuePair(this.sparqlQueryType, this.sparqlQuery));
+		nameValuePairs.add(new BasicNameValuePair(main.getSparqlQueryType(), this.sparqlQuery));
 		post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
  
 		HttpResponse response = client.execute(post);
@@ -154,30 +83,75 @@ public class Query extends ServerResource {
 		return this.sparqlQuery;
 	}
 	
-	/**
-	 * Get type of SPARQL query, either 'update' or 'query' (select)
-	 * @return String
-	 */
-	public String getSparqlQueryType() {
-		return this.sparqlQueryType;
+	public MainServerResource getMain() {
+		return this.main;
+	}
+	
+	public Config getConfig() {
+		return this.config;
+	}
+	
+	public Logger getLogger() {
+		return this.logger;
 	}
 	
 	/**
-	 * Set mode of restlet to work in. (e.g. log text queries, dump triples as xml, use db, central server)
-	 * possible values: PLAIN_TEXT_FILE = 1, DB = 2, EXPORT_GRAPHS = 3, CENTRAL_SERVER = 4
+	 * Execute query and return result in representation object. If query is empty, the query form is returned
+	 * 
+	 * @param sparqlQuery
+	 * @return
+	 * @throws Exception 
 	 */
-	public void setMode(int mode) {
-		this.mode = mode;
+	public Representation processQuery() throws Exception {
+		Representation result;
+        if (sparqlQuery == null || sparqlQuery.length() > 0) {
+        	logger.info("executing query");
+        	result = this.executeQuery();
+		} else {
+			logger.info("no query to executy. Loading query form");
+			result = Util.getQueryForm(main.getApplication(), false, main.getReference().toString());
+		}
+        return result;
 	}
 	
 	/**
-	 * Get mode of restlet to work in. (e.g. log text queries, dump triples as xml, use db, central server)
-	 * possible values: PLAIN_TEXT_FILE = 1, DB = 2, EXPORT_GRAPHS = 3, CENTRAL_SERVER = 4
-	 * @return int
+	 * Execute query (and log) query
+	 * 
+	 * @return Representation containing query result
+	 * @throws Exception 
 	 */
-	public int getMode() {
-		return this.mode;
+	private Representation executeQuery() throws Exception {
+		String uri;
+    	if (main.getSparqlQueryType() == QueryTypes.SELECT) {
+    		uri = config.getString("master.tripleStore.selectUri");
+    	} else {
+    		uri = config.getString("master.tripleStore.updateUri");
+    	}
+    	Representation queryResult;
+    	if (main.getSparqlQueryType() == QueryTypes.SELECT && this.sparqlQuery.length() < 2000) {
+    		queryResult = executeGETQuery(uri);
+    	} else {
+    		//queryResult = executeGETQuery(uri);
+    		queryResult = executePOSTQuery(uri);
+    		
+    	}
+    	return queryResult;
 	}
-
 	
+	private Representation executeGETQuery(String uri) throws Exception {
+		String queryResult = "";
+		ClientResource resource = new ClientResource(uri + "?" + main.getSparqlQueryType() + "=" + sparqlQuery + "&Accept=" + responseMediaType.getName());  
+		resource.setNext(new Client(new Context(), Protocol.HTTP));
+		Representation result = null;
+		result = resource.get(responseMediaType);
+		QueryLog.log(this);
+		if (result == null) {
+			result = new StringRepresentation(queryResult, responseMediaType);
+		}
+		//The restlet is having memory leaks. This might solve this issue
+		//(http://restlet-discuss.1400322.n2.nabble.com/resource-leak-after-Post-quot-form-quot-td7186110.html)
+		resource.release();
+		resource.getResponse().getEntity().exhaust(); 
+		return result;
+	}
 }

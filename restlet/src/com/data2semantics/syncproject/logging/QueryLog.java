@@ -14,16 +14,16 @@ public class QueryLog {
 	
 	
 	public static void log(Query query) throws Exception {
-		Config config = query.getApplication().getConfig();
-		int logType = query.getMode();
-		query.getApplication().getLogger().info("Using mode " + Integer.toString(logType));
+		Config config = query.getConfig();
+		int logType = query.getMain().getMode();
+		query.getLogger().info("Using mode " + Integer.toString(logType));
         switch (logType) {
             case PLAIN_TEXT_FILE:
             	TextLogger.log(query);
             	break;
             case EXPORT_GRAPHS:
             	//No need to export graphs when it is a simple select query
-            	if (query.getSparqlQueryType().equals("update")) {
+            	if (query.getMain().getSparqlQueryType().equals("update")) {
             		ExportTriples.export(
             			query,
             			config.getString("master.tripleStore.selectUri"),

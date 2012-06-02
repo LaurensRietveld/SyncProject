@@ -22,7 +22,7 @@ public class DbLogger {
 	 * @throws ClassNotFoundException 
 	 */
 	public static void log(Query query) throws IOException, SQLException, ClassNotFoundException {
-		Config config = query.getApplication().getConfig();
+		Config config = query.getConfig();
 
 		// This will load the MySQL driver, each DB has its own driver
 		Class.forName(config.getString("master.db.javaDriver"));
@@ -33,7 +33,7 @@ public class DbLogger {
 				"INSERT INTO QueryLog (QueryType,Query)\n" +
 				"VALUES (?, ?)");
 		
-		preparedStatement.setString(1, query.getSparqlQueryType());
+		preparedStatement.setString(1, query.getMain().getSparqlQueryType());
 		preparedStatement.setString(2, query.getSparqlQuery());
 		preparedStatement.executeUpdate();
 		query.getLogger().info("executed DB query");

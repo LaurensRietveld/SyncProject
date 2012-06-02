@@ -20,7 +20,7 @@ public class ExportTriples {
 	
 	
     public static void export(com.data2semantics.syncproject.resources.Query query, String endpoint, File exportFile) throws Exception{
-    	//empty file if it exists (do not create new one: file permissions get screwed up"
+    	//empty file if it exists (do not create new one: file permissions get screwed up)
     	if (exportFile.exists()) {
             BufferedWriter bw = new BufferedWriter(new FileWriter(exportFile));
             bw.write("");
@@ -31,7 +31,7 @@ public class ExportTriples {
     	query.getLogger().info("going to process query and write all results to file");
     	
     	writeResultToFile(result, exportFile);
-    	Config config = query.getApplication().getConfig();
+    	Config config = query.getConfig();
     	String destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.xmlDumpDir") + "/" + config.getString("mode3.dumpFile");
     	Util.rsync(exportFile, destFile);
     }

@@ -21,15 +21,15 @@ public class TextLogger {
 	 * @throws Exception 
 	 */
 	public static void log(Query query) throws Exception {
-		Config config = query.getApplication().getConfig();
+		Config config = query.getConfig();
 		String filename = config.getString("master.queryLogDir") + "/";
-		if (query.getSparqlQueryType().equals("update")) {
+		if (query.getMain().getSparqlQueryType().equals("update")) {
 			filename += config.getString("mode1.updateFile");
 		} else {
 			filename += config.getString("mode1.queryFile");
 		}
 		File file = new File(filename);
-		writeToFile(query.getLogger(), file, config.getString("mode1.queryDelimiter") + query.getSparqlQuery());
+		writeToFile(query.getMain().getLogger(), file, config.getString("mode1.queryDelimiter") + query.getSparqlQuery());
 		String destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.queryLogDir") + "/" + config.getString("mode1.updateFile");
 		Util.rsync(file, destFile);
 	}

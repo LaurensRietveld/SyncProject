@@ -20,7 +20,7 @@ public class GitLogger {
 	 * @throws Exception 
 	 */
 	public static void log(Query query) throws Exception {
-		Config config = query.getApplication().getConfig();
+		Config config = query.getConfig();
 		
 		File gitPath = new File(config.getString("master.gitDir") + "/" + config.getString("mode4.repoDir"));
 		if (!gitPath.exists() || !gitPath.canExecute()) {
