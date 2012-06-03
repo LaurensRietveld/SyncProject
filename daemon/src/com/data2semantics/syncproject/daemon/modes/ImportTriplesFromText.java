@@ -23,7 +23,7 @@ public class ImportTriplesFromText extends Mode implements ModeInterface {
 	 */
 	public void process() throws Exception {
 		if (!dumpFile.exists()) {
-			System.out.println("WARNING: dump file does not exist");
+			//System.out.println("WARNING: dump file does not exist");
 		} else if (dumpFile.length() > 0 && dumpFile.lastModified() != this.fileLastModified) {
 			System.out.print(".");
 			Util.importDumpFile(dumpFile, updateUri);

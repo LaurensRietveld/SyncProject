@@ -59,7 +59,6 @@ public class ImportTriplesFromDb extends Mode implements ModeInterface {
 				System.out.print(".");
 				Util.executeQuery(config.getString("slave.tripleStore.updateUri"), queryString);
 				System.out.println(".");
-				
 				storeExperimentInfo(MODE);
 			}
 		}

@@ -37,7 +37,7 @@ public class ImportTriplesFromGit extends Mode implements ModeInterface {
 	public void process() throws Exception {
 		boolean changed = Util.executeCmd(gitPull);
 		if (!dumpFile.exists()) {
-			System.out.println("WARNING: dump file does not exist");
+			//System.out.println("WARNING: dump file does not exist");
 		} else if (changed) {
 			System.out.print(".");
 			Util.importDumpFile(dumpFile, updateUri);

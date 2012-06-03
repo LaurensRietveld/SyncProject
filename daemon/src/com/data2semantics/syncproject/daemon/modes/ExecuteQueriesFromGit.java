@@ -58,7 +58,7 @@ public class ExecuteQueriesFromGit extends Mode implements ModeInterface {
 		boolean changed = Util.executeCmd(gitPull);
 		
 		if (!queriesFile.exists()) {
-			System.out.println("File containing queries executed on master does not exist. Wait.");
+//			System.out.println("File containing queries executed on master does not exist. Wait.");
 		} else if (changed) {
 			//Something changed
 			System.out.print(".");

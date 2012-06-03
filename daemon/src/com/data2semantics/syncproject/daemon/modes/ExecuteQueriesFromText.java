@@ -14,7 +14,6 @@ public class ExecuteQueriesFromText extends Mode implements ModeInterface {
 	public ExecuteQueriesFromText(Config config) throws Exception {
 		super(config);
 		
-		
 		//this.initPreparedStatements();
 		queriesFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.updateFile"));
 		executedQueriesFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.executedQueriesFile"));
@@ -41,10 +40,6 @@ public class ExecuteQueriesFromText extends Mode implements ModeInterface {
 	 */
 	public void process() throws Exception {
 		if (queriesFile.exists() && executedQueriesFile.exists()) {
-//			if (!executedQueriesFile.exists() && (int)queriesFile.length() < 4) {
-//				Runtime.getRuntime().exec("cp " + queriesFile.getAbsolutePath() + " " + executedQueriesFile.getAbsolutePath());
-//				sleep(2);
-//			}
 			if ((int)queriesFile.length() != (int)executedQueriesFile.length()) {
 				System.out.print(".");
 				Util.processTextFileChanges(queriesFile, executedQueriesFile, delimiter, tripleStoreUri);
