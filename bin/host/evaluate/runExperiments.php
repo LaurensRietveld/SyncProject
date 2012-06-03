@@ -10,21 +10,15 @@
 	
 	
 	
-	doPost("http://localhost:9080/syncRestlet/update", array("queries" => array("query1", "query2")));
-	exit;
-	
 	//Time to wait between runs for each mode. Setting it too short means runs (daemons) will overlap and skew the experiments
 	$waitingTimes = array(
-		1 => 20,
-		2 => 7,
-		3 => 20,
-		4 => 20,
+		1 => 6,
+		2 => 6,
+		3 => 40,
+		4 => 6,
+		5 => 20,
+		6 => 20
 	);
-	
-// 	doPost("http://localhost:9080/syncRestlet/update", array("mode" => 2, "query" => "INSERT {<http://example/sub> <http://example/bla> \"test\"} WHERE {} "));
-	
-// 	echo "done test";exit;
-	
 	
 	$runningVMs = shell_exec("VBoxManage list runningvms");
 	if (strpos($runningVMs, "Git Server") === false || strpos($runningVMs, "Debian Master") === false || strpos($runningVMs, "Debian Slave") === false) {
@@ -39,16 +33,33 @@
 		exit;
 	}
 	
+	//Write mappings to file, so we can always check whether they are actually executed
+	file_put_contents(__DIR__."/mappings.txt", var_export($mappings, true));
+	
 	foreach ($config['args']['mode'] AS $mode) {
+		shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode);
 		//Do n number of test runs, and for each run, execute n queries
 		$nQueries = 1;
 		while ($nQueries <= $config['args']['nChanges']) {
 			resetNodes();
-			sleep(5);
 			
+			if ($mode == 3 || $mode == 5 || $mode == 6 ) {
+				//These mode serialized the triple stores, and then sync them
+				//The 'resetNode' functionality cleared the slave and master nodes, which means there are no existing serializations on disc
+				//To simulate a proper use case scenario as much as possible, we need to make sure there already exists a serialization of the triplestore as it is now
+				//Otherwise, we would measure how much time it costs to copy the serialization, while we want to know whether for instance rsync can optimize the syncing when just a part of the serialization has changed
+				//To serialize the triple (without actually changing the triple store, we need to send an update statement which will fail (thus not change the triplestore)
+				$fields = array(
+					"mode" => $mode,
+					"query" => "bla" //will fail, but will also make sure the graph is serialized
+				);
+				doPost($config['master']['restlet']['updateUri'], $fields);
+			} 
+				
+			
+			
+			sleep(1);
 			echo "Mode: ".$mode." - nChanges: ".$nQueries;
-			
-			
 			
 			$queriesToExecute = array();
 			//For run n, perform n number of queries
@@ -59,16 +70,19 @@
 			}
 			echo ".";
 			mysql_query("INSERT INTO Experiments (Mode, nChanges, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", '".$config['args']['runId']."');");
-			executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
+			$fields = array(
+					"mode" => $mode,
+					"query" => $queriesToExecute
+			);
+			doPost($config['master']['restlet']['updateUri'], $fields);
+			//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
 			echo ".\n";
 			$nQueries++;
 			if ($nQueries <= $config['args']['nChanges']) {
 				//wait x seconds, so we have time to measure everything (but not after the last run, as there is no use)
 				sleep($waitingTimes[$mode]); 
 			}
-			
 		}
-		
 	}
 
 	function getDeleteInsertQuery($mapping) {
@@ -210,7 +224,7 @@
 		}
 		$modes = explode(",", $args['mode']);
 		foreach ($modes as $mode) {
-			if ((int)$mode < 1 || (int)$mode > 4) {
+			if ((int)$mode < 1 || (int)$mode > 6) {
 				echo "No valid mode provided. Exiting\n";
 				exit;
 			}

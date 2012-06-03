@@ -36,6 +36,7 @@ function doPost($uri, $fields) {
 			$fields_string .= $key.'='.$value.'&';
 		}
 	}
+// 	var_export($fields_string);exit;
 	rtrim($fields_string,'&');
 	//$fields_string = http_build_query($fields);
 	//open connection
