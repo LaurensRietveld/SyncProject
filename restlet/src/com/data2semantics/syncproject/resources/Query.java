@@ -104,7 +104,7 @@ public class Query {
 	 */
 	public Representation processQuery() throws Exception {
 		Representation result;
-        if (sparqlQuery == null || sparqlQuery.length() > 0) {
+        if (sparqlQuery != null && sparqlQuery.length() > 0) {
         	logger.info("executing query");
         	result = this.executeQuery();
 		} else {

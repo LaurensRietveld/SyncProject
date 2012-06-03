@@ -97,10 +97,12 @@ public class MainServerResource extends ServerResource {
         initLogger();
         getLogger().info("Processing POST in mode " + Integer.toString(this.getMode()));
         if (hasQuery) {
+        	getLogger().info("processing " + Integer.toString(queries.length) + " queries");
         	for (String queryString: this.queries) {
         		Query query = new Query(queryString, (MainServerResource)this);
             	result = query.processQuery();
         	}
+        	if (getQueryLogger().useBatchLogging()) getQueryLogger().loggingCallback();
         } else {
         	getLogger().info("no query to executy. Loading query form");
 			result = Util.getQueryForm(getApplication(), false, getReference().toString());
