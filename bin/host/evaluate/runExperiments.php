@@ -16,8 +16,8 @@
 		2 => 6,
 		3 => 40,
 		4 => 6,
-		5 => 20,
-		6 => 20
+		5 => 40,
+		6 => 40
 	);
 	
 	$runningVMs = shell_exec("VBoxManage list runningvms");
