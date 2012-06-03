@@ -1,14 +1,11 @@
 package com.data2semantics.syncproject.daemon.modes;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 
 import com.data2semantics.syncproject.daemon.util.Util;
@@ -47,14 +44,10 @@ public class ImportTriplesFromDb extends Mode implements ModeInterface {
 	 * @throws SQLException 
 	 */
 	public void process() throws IOException, SQLException {
-		
-		
-		
-		if (!tableLastUpdated().equals(lastUpdate)) {
-
-			
+		String tableLastUpdated = tableLastUpdated();
+		if (!tableLastUpdated.equals(lastUpdate)) {
+			lastUpdate = tableLastUpdated;
 			String queryString = "INSERT DATA {\n";
-			
 			ResultSet result = preparedStatements.get("getTriplesToImport").executeQuery();
 			while (result.next()) {
 				queryString += result.getString("subject") + " " +
@@ -72,10 +65,8 @@ public class ImportTriplesFromDb extends Mode implements ModeInterface {
 	}
 	
 	private void initPreparedStatements() throws SQLException {
-		preparedStatements.put("getTriplesToImport", connection.prepareStatement("SELECT * FROM Serialization)"));
+		preparedStatements.put("getTriplesToImport", connection.prepareStatement("SELECT * FROM Serialization"));
 		preparedStatements.put("getLastUpdateTime", connection.prepareStatement("SHOW TABLE STATUS FROM SyncProject LIKE 'Serialization'"));
-		//preparedStatements.put("deleteAllTriples", connection.prepareStatement("TRUNCATE TABLE Serialization"));
-		//preparedStatements.put("setAsExecuted", connection.prepareStatement("INSERT INTO ExecutedOnSlave SET QueryId = ?"));
 	}
 	
 	private String tableLastUpdated() throws SQLException {
