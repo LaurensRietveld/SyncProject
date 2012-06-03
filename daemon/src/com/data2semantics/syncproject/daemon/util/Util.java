@@ -5,8 +5,10 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,5 +104,51 @@ public class Util {
 	    bw.close();
 	}
 	
+	/**
+	 * Execute command (e.g. git pull, push or commit)
+	 * 
+	 * @param cmd
+	 * @throws Exception In case git encounters error (e.g. failed merges)
+	 * 
+	 * @returns boolean False if nothing changed ('already up to date'), true otherwise
+	 */
+	public static boolean executeCmd(ProcessBuilder cmd) throws Exception {
+		boolean result = true;
+        Process process;
+		process = cmd.start();
+        int val = process.waitFor();
+
+        InputStream is = process.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        
+        while ((line = br.readLine()) != null) {
+        	if (val != 0) {
+        		//Output this for debugging purposes. Something went wrong.
+        		System.out.println(line);
+        		continue;
+        	}
+        	if (line.equals("Already up-to-date.")) {
+        		result = false;
+        	}
+        	break;
+        }
+        if (val != 0) {
+            throw new Exception("Exception excecuting " + cmd.command().toString() +"; return code = " + val);
+        }
+        return result;
+	}
 	
+	public static void importDumpFile(File dumpFile, String uri) throws Exception {
+		String queryString = "INSERT DATA {\n";
+		FileReader fr = new FileReader(dumpFile);
+		BufferedReader reader = new BufferedReader(fr);
+		String st = "";
+		while ((st = reader.readLine()) != null) {
+			queryString += st + " .\n";
+		}
+		queryString += "}";
+		Util.executeQuery(uri, queryString);
+	}
 }

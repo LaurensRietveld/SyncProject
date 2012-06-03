@@ -13,6 +13,8 @@ import org.apache.commons.cli.ParseException;
 
 import com.data2semantics.syncproject.daemon.modes.ExecuteQueriesFromDb;
 import com.data2semantics.syncproject.daemon.modes.ExecuteQueriesFromGit;
+import com.data2semantics.syncproject.daemon.modes.ImportTriplesFromDb;
+import com.data2semantics.syncproject.daemon.modes.ImportTriplesFromGit;
 import com.data2semantics.syncproject.daemon.modes.ImportTriplesFromText;
 import com.data2semantics.syncproject.daemon.modes.ExecuteQueriesFromText;
 import com.typesafe.config.Config;
@@ -37,6 +39,10 @@ public class Daemon {
 			new ImportTriplesFromText(config);
 		} else if (mode == ExecuteQueriesFromDb.MODE) {
 			new ExecuteQueriesFromDb(config);
+		} else if (mode == ImportTriplesFromGit.MODE) {
+			new ImportTriplesFromGit(config);
+		} else if (mode == ImportTriplesFromDb.MODE) {
+			new ImportTriplesFromDb(config);
 		}
 	}
 	
@@ -62,7 +68,7 @@ public class Daemon {
 	public static void main(String[] args) {
 		Options options = new Options();
 		options.addOption(new Option("help", "print this message"));
-		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Mode to run: (1) sync text queries; (2) use DB; (3) sync graph; (4) central (git) server").create("mode"));
+		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Mode to run: (1) sync text queries; (2) use DB to sync text queries; (3) sync graph complete graph using rsync; (4) use central (git) server to sync queries; (5) Use central git server to sync graphs; (6) Use DB to sync triples of graph").create("mode"));
 		
 		CommandLineParser parser = new GnuParser();
 		CommandLine commands = null;
@@ -86,7 +92,7 @@ public class Daemon {
 	    	System.exit(1);
 	    } else {
 	    	mode = Integer.parseInt(commands.getOptionValue("mode"));
-	    	if (mode < 1 || mode > 4) {
+	    	if (mode < 1 || mode > 6) {
 	    		System.out.println("Incorrect mode passed as parameter. Currently implemented: 1,2 and 3");
 	    		System.exit(1);
 	    	}

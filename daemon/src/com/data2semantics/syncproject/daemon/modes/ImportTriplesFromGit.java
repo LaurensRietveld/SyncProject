@@ -1,18 +1,31 @@
 package com.data2semantics.syncproject.daemon.modes;
 
 import java.io.File;
+import java.io.IOException;
 import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
-public class ImportTriplesFromText extends Mode implements ModeInterface {
-	public static int MODE = 3;
+public class ImportTriplesFromGit extends Mode implements ModeInterface {
+	public static int MODE = 5;
 	private File dumpFile;
 	private String updateUri;
-	private long fileLastModified = 0;
-	public ImportTriplesFromText(Config config) throws Exception {
+	private File gitPath;
+	private ProcessBuilder gitPull;
+	
+	public ImportTriplesFromGit(Config config) throws Exception {
 		super(config);
-		this.dumpFile = new File(config.getString("slave.serializationDir") + "/" + config.getString("serializationMode.dumpFile"));
+		
+		this.gitPath = new File(config.getString("slave.git.dir") + "/" + config.getString("slave.git.repoDir"));
+		if (!gitPath.exists()) {
+			throw new IOException("Git path does not exist: " + gitPath.getAbsolutePath());
+		}
+		this.dumpFile = new File(gitPath.getAbsolutePath() + "/" + config.getString("serializationMode.dumpFile"));
 		this.updateUri = config.getString("slave.tripleStore.updateUri");
+		
+        String[] pullCmd = new String[]{"git", "pull"};
+        gitPull = new ProcessBuilder(pullCmd);
+        gitPull.directory(gitPath);
+		
 		runDaemon();
 	}
 	
@@ -22,14 +35,14 @@ public class ImportTriplesFromText extends Mode implements ModeInterface {
 	 * @throws Exception 
 	 */
 	public void process() throws Exception {
+		boolean changed = Util.executeCmd(gitPull);
 		if (!dumpFile.exists()) {
 			System.out.println("WARNING: dump file does not exist");
-		} else if (dumpFile.length() > 0 && dumpFile.lastModified() != this.fileLastModified) {
+		} else if (changed) {
 			System.out.print(".");
 			Util.importDumpFile(dumpFile, updateUri);
 			System.out.println(".");
 			storeExperimentInfo(MODE);
-			this.fileLastModified = dumpFile.lastModified();
 		}
 	}
 	/**
