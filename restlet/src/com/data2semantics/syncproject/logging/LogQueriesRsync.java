@@ -14,7 +14,7 @@ public class LogQueriesRsync extends GenericLogger{
 	public LogQueriesRsync(boolean batchLogging, MainServerResource main) {
 		super(batchLogging, main);
 		Config config = main.getApplication().getConfig();
-		destFile = config.getString("slave.serverLocation") + ":" + config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.updateFile");
+		destFile = "lrd900@" + config.getString("slave.serverLocation") + ":" + config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.updateFile");
 		delimiter = config.getString("queryLogMode.queryDelimiter");
 		
 		String logFileName = config.getString("master.queryLogDir") + "/";
