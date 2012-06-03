@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +57,7 @@ public class Util  {
         Process process = pb.start();
         int val = process.waitFor();
         if (val != 0) {
-            throw new Exception("Exception during RSync; return code = " + val);
+            throw new Exception("Exception during RSync; return code = " + val + " cmd: " + Arrays.toString(cmd));
         }
 	}
 	
