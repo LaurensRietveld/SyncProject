@@ -4,14 +4,14 @@ import java.io.File;
 import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
-public class SlaveTextQuery extends SlaveMode implements ModeInterface {
+public class ExecuteQueriesFromText extends Mode implements ModeInterface {
 	public static int MODE = 1;
 	private File queriesFile;
 	private File executedQueriesFile;
 	private String delimiter;
 	private String tripleStoreUri;
 	
-	public SlaveTextQuery(Config config) throws Exception {
+	public ExecuteQueriesFromText(Config config) throws Exception {
 		super(config);
 		
 		

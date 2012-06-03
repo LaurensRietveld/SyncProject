@@ -12,11 +12,11 @@ import java.util.HashMap;
 import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
-public class SlaveDb extends SlaveMode implements ModeInterface {
+public class ExecuteQueriesFromDb extends Mode implements ModeInterface {
 	public static int MODE = 2;
 	private Connection connection;
 	private HashMap<String, PreparedStatement> preparedStatements = new HashMap<String, PreparedStatement>();
-	public SlaveDb(Config config) throws Exception {
+	public ExecuteQueriesFromDb(Config config) throws Exception {
 		super(config);
 		Class.forName(config.getString("slave.db.javaDriver"));
 		this.connection = DriverManager.getConnection(config.getString("slave.db.connection"));

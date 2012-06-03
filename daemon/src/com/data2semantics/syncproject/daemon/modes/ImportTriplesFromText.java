@@ -7,12 +7,12 @@ import java.io.FileReader;
 import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
-public class SlaveImportDump extends SlaveMode implements ModeInterface {
+public class ImportTriplesFromText extends Mode implements ModeInterface {
 	public static int MODE = 3;
 	private File dumpFile;
 	private String updateUri;
 	private long fileLastModified = 0;
-	public SlaveImportDump(Config config) throws Exception {
+	public ImportTriplesFromText(Config config) throws Exception {
 		super(config);
 		this.dumpFile = new File(config.getString("slave.serializationDir") + "/" + config.getString("serializationMode.dumpFile"));
 		this.updateUri = config.getString("slave.tripleStore.updateUri");

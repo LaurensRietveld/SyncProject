@@ -11,10 +11,10 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import com.data2semantics.syncproject.daemon.modes.SlaveDb;
-import com.data2semantics.syncproject.daemon.modes.SlaveGit;
-import com.data2semantics.syncproject.daemon.modes.SlaveImportDump;
-import com.data2semantics.syncproject.daemon.modes.SlaveTextQuery;
+import com.data2semantics.syncproject.daemon.modes.ExecuteQueriesFromDb;
+import com.data2semantics.syncproject.daemon.modes.ExecuteQueriesFromGit;
+import com.data2semantics.syncproject.daemon.modes.ImportTriplesFromText;
+import com.data2semantics.syncproject.daemon.modes.ExecuteQueriesFromText;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -29,14 +29,14 @@ public class Daemon {
 	
 	public void initDaemon()throws Exception {
 		this.loadConfigFile();
-		if (mode == SlaveGit.MODE) {
-			new SlaveGit(config);
-		} else if (mode == SlaveTextQuery.MODE) {
-			new SlaveTextQuery(config);
-		} else if (mode == SlaveImportDump.MODE) {
-			new SlaveImportDump(config);
-		} else if (mode == SlaveDb.MODE) {
-			new SlaveDb(config);
+		if (mode == ExecuteQueriesFromGit.MODE) {
+			new ExecuteQueriesFromGit(config);
+		} else if (mode == ExecuteQueriesFromText.MODE) {
+			new ExecuteQueriesFromText(config);
+		} else if (mode == ImportTriplesFromText.MODE) {
+			new ImportTriplesFromText(config);
+		} else if (mode == ExecuteQueriesFromDb.MODE) {
+			new ExecuteQueriesFromDb(config);
 		}
 	}
 	

@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import com.data2semantics.syncproject.daemon.util.Util;
 import com.typesafe.config.Config;
 
-public class SlaveGit extends SlaveMode implements ModeInterface {
+public class ExecuteQueriesFromGit extends Mode implements ModeInterface {
 	public static int MODE = 4;
 	private String delimiter;
 	private String tripleStoreUri;
@@ -19,7 +19,7 @@ public class SlaveGit extends SlaveMode implements ModeInterface {
 	private ProcessBuilder gitPull;
 //	ProcessBuilder gitPush;
 //	ProcessBuilder gitCommit;
-	public SlaveGit(Config config) throws Exception {
+	public ExecuteQueriesFromGit(Config config) throws Exception {
 		super(config);
 		this.gitPath = new File(config.getString("slave.git.dir") + "/" + config.getString("slave.git.repoDir"));
 		if (!gitPath.exists()) {

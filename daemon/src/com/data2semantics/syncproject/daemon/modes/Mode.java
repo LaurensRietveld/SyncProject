@@ -8,13 +8,13 @@ import java.sql.SQLException;
 
 import com.typesafe.config.Config;
 
-public class SlaveMode {
+public class Mode {
 	protected Config config;
 	protected int sleepInterval;
 	protected Connection expConnection;
 	protected PreparedStatement expPreparedStatement;
 	private String hostname;
-	SlaveMode(Config config) throws Exception {
+	Mode(Config config) throws Exception {
 		this.hostname = java.net.InetAddress.getLocalHost().getHostName();
 		this.config = config;
 		this.sleepInterval = config.getInt("slave.daemon.checkInterval");	
