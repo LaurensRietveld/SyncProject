@@ -10,7 +10,16 @@
 	echo "==== Processing SP2Benchmark turtle file ====\n";
 	if (!file_exists($turtleFile)) {
 		echo "\tGenerating file\n";
-		shell_exec("cd ".$dir." && sp2b_gen -t ".$numberOfTriples." ".$turtleFile);
+		shell_exec("cd ".$dir." && sp2b_gen -t ".$numberOfTriples." ".$turtleFile.".bak");
+		echo "\tReplacing blank nodes into URIs\n";
+		//Do this, because the experiment tries to change triples on two triple stores using this same dataset
+		//Because blank nodes have no persistent identifier, this because a bit more difficult. 
+		//Therefore, change blank nodes into uris
+		$prefix = "@prefix bn: <http://blanknode/> .\n";
+		$triples = file_get_contents($turtleFile.".bak");
+		$triples = $prefix.str_replace("_:", "bn:", $triples);
+		file_put_contents($turtleFile, $triples);
+		shell_exec("rm ".$turtleFile.".bak");
 	} else {
 		echo "\tSP2 file already exists. Using that one.\n";
 	}
