@@ -13,8 +13,6 @@
 	$results = array();
 	if ($handle) {
 		while (($line = fgets($handle, 4096)) !== false) {
-			// 			22:14:03.984249 IP 192.168.56.1.51054 > 192.168.56.111.8080: tcp 0
-			// 			22:14:04.221120 IP 192.168.56.133.5353 > 224.0.0.251.5353: UDP, length 242
 			if (strlen(trim($line))) {
 				$time = "([\d:\.]*) IP ";
 				$fromIp = "([\d\.]*) > ";
@@ -47,8 +45,6 @@
 	
 	
 	
-// 	var_export($results);
-
 	$size = 0;
 	foreach ($results as $result) {
 		$size += (int)$result['size'];

@@ -11,7 +11,7 @@
 	
 	$dir = __DIR__."/../SP2Benchmark";
 	$turtleFile = __DIR__."/output".$nTriples.".n3";
-	echo "==== Processing SP2Benchmark turtle file for nTriples ".$nTriples."====\n";
+	echo "==== Processing SP2Benchmark turtle file for nTriples ".$nTriples." ====\n";
 	if (!file_exists($turtleFile)) {
 		//echo "\tGenerating file\n";
 		shell_exec("cd ".$dir." && sp2b_gen -t ".$nTriples." ".$turtleFile.".bak");

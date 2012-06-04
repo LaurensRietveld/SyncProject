@@ -32,11 +32,13 @@
 		$nQueries = 1;
 		while ($nQueries <= $config['args']['nChanges']) {
 			resetNodes($config['args']['nTriples']);
-			prepareExports($config, $mode);
+			$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
 			$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
 			shell_exec($cmd);
 			waitForDaemonToStart($uniqueKey);
-			echo "Mode: ".$mode." - nChanges: ".$nQueries;
+			prepareExports($config, $mode);
+			sleep(3);
+			echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries."\n";
 			
 			$queriesToExecute = array();
 			//For run n, perform n number of queries
@@ -63,7 +65,7 @@
 	
 	function prepareExports($config, $mode) {
 		//These mode serialized the triple stores, and then sync them
-		//The 'resetNode' functionality cleared the slave and master nodes, which means there are no existing serializations on disc
+		//The 'resetNode' functionality cleared the slave and master nodes, which means there are no existing serializations and stuff on disc
 		//To simulate a proper use case scenario as much as possible, we need to make sure there already exists a serialization of the triplestore as it is now
 		//Otherwise, we would measure how much time it costs to copy the serialization, while we want to know whether for instance rsync can optimize the syncing when just a part of the serialization has changed
 		//To serialize the triple (without actually changing the triple store, we need to send an update statement which will fail (thus not change the triplestore)
@@ -79,10 +81,8 @@
 	
 		while (true) {
 			if (daemonFinished($mode, $timestamp)) {
-				echo "\n";
 				break;
 			} else {
-				echo "w";
 				sleep(3);
 			}
 		}
@@ -115,6 +115,7 @@
 	}
 	
 	function waitForRunToFinish($mode, $nQueries, $runId) {
+		echo date("Ymd H:i:s")." - Wait for run to finish\n";
 		//Get timestamp from before this experiment
 		$query = "SELECT MAX(Timestamp) FROM Experiments WHERE  Mode = ".(int)$mode." AND nChanges = ".(int)$nQueries." AND RunId = '".$runId."'";
 		$result = mysql_query($query);
@@ -124,10 +125,8 @@
 			exit;
 		}
 		while (true) {
-			echo "w";
 			sleep(3);
 			if (daemonFinished) {
-				echo "\n";
 				break;
 			}
 			
@@ -136,20 +135,19 @@
 	
 	function waitForDaemonToStart($uniqueKey) {
 		$query = "SELECT * FROM DaemonRunning WHERE `Key` = '".$uniqueKey."'";
-		echo $query;exit;
+		echo date("H:i:s")." - Wait for daemon to start\n";
 		while (true) {
 			$result = mysql_query($query);
 			if (mysql_num_rows($result) > 0) {
-				echo "\n";
 				break;
 			} else {
-				echo "w";
 				sleep(3);
 			}
 		}
 	}
 	
 	function daemonFinished($mode, $timestamp) {
+		echo date("H:i:s")." - Wait for deamon to finish importing\n";
 		$finished = false;
 		$query = "SELECT Timestamp FROM Daemon WHERE  Mode = ".(int)$mode." AND Timestamp > '".$timestamp."'";
 		$result = mysql_query($query);
