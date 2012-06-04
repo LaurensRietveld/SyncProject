@@ -12,29 +12,33 @@ public class Mode {
 	protected Config config;
 	protected int sleepInterval;
 	protected Connection expConnection;
-	protected PreparedStatement expPreparedStatement;
+	protected PreparedStatement insertExperimentInto;
+	protected PreparedStatement insertKey;
 	private String hostname;
-	Mode(Config config) throws Exception {
+	private String key;
+	Mode(Config config, String key) throws Exception {
 		this.hostname = java.net.InetAddress.getLocalHost().getHostName();
+		this.key = key;
 		this.config = config;
 		this.sleepInterval = config.getInt("slave.daemon.checkInterval");	
 		Class.forName(config.getString("experiments.db.javaDriver"));
 		this.expConnection = DriverManager.getConnection(config.getString("experiments.db.connection"));
 		//this.expConnection = DriverManager.getConnection("jdbc:mysql://localhost/Experiments?user=syncProject");
 		this.expConnection.setAutoCommit(false);
-		expPreparedStatement = expConnection.prepareStatement(
+		insertExperimentInto = expConnection.prepareStatement(
 			"INSERT INTO Daemon (Mode,Node)\n" +
 			"VALUES (?, ?)");
+		insertKey = expConnection.prepareStatement("INSERT INTO DaemonRunning (Key) VALUES (?)");
 	}
 	
 	/**
-	 * Sleep for x seconds
+	 * Sleep for x milliseconds
 	 * 
-	 * @param seconds
+	 * @param milliseconds
 	 */
-	public static void sleep(int seconds) {
+	public static void sleep(int milliseconds) {
 		try {
-			Thread.sleep(seconds * 1000);
+			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
 			System.out.println(e.getMessage());
 			System.exit(1);
@@ -42,8 +46,21 @@ public class Mode {
 	}
 	
 	public void storeExperimentInfo(int mode) throws SQLException, UnknownHostException {
-		expPreparedStatement.setInt(1, mode);
-		expPreparedStatement.setString(2, hostname);
-		expPreparedStatement.executeUpdate();
+		insertExperimentInto.setInt(1, mode);
+		insertExperimentInto.setString(2, hostname);
+		insertExperimentInto.executeUpdate();
 	}
+	
+	/**
+	 * Store key in database. This way, the script running the experiments can check whether the daemon has finished initializing
+	 * @throws SQLException 
+	 */
+	public void storeKey() throws SQLException {
+		if (key.length() > 0) {
+			insertKey.setString(1, key);
+			insertKey.executeUpdate();
+		}
+	}
+	
+	
 }

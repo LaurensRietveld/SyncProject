@@ -8,6 +8,7 @@
 		echo "No mode number passed as parameter. Stopping\n";
 		exit;
 	}
+	$key = $argv[2];
 	echo "==== ".date("Ymd H:i:s").": ";
 	preg_match_all("/\s*lrd900\s*(\d*).*/", $result, $matches);
 	if (is_array($matches[1])) {
@@ -18,4 +19,4 @@
 	} else {
 		echo "Starting Daemon ====\n";
 	}
-	$result = shell_exec("java -jar /usr/local/share/syncProject/daemon.jar --mode ".$mode." >> /usr/local/share/syncProject/logs/daemon.txt &");
+	$result = shell_exec("java -jar /usr/local/share/syncProject/daemon.jar --mode ".$mode." --key ".$key." >> /usr/local/share/syncProject/logs/daemon.txt &");

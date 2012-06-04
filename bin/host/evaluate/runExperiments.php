@@ -13,9 +13,9 @@
 		echo "Not all node are running. Required nodes: 'Debian Git Server', 'Debian Master', 'Debian Slave'. Exiting...\n";
 		exit;
 	}
-	
 	resetNodes($config['args']['nTriples']); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
 	$mappings = loadChangesToExecute($config);
+	
 	if (!count($mappings)) {
 		echo "No mappings loaded from triplestore. Exiting...\n";
 		exit;
@@ -25,14 +25,17 @@
 	file_put_contents(__DIR__."/mappings.txt", var_export($mappings, true));
 	
 	foreach ($config['args']['mode'] AS $mode) {
-		shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode);
+		$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
+		shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
+		sleep(10);
 		//Do n number of test runs, and for each run, execute n queries
 		$nQueries = 1;
 		while ($nQueries <= $config['args']['nChanges']) {
 			resetNodes($config['args']['nTriples']);
 			prepareExports($config, $mode);
-			
-			sleep(1);
+			$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode;
+			shell_exec($cmd);
+			sleep(10);
 			echo "Mode: ".$mode." - nChanges: ".$nQueries;
 			
 			$queriesToExecute = array();
@@ -124,8 +127,8 @@
 			echo "w";
 			sleep(3);
 			if (daemonFinished) {
-				break;
 				echo "\n";
+				break;
 			}
 			
 		}

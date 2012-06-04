@@ -11,8 +11,8 @@ public class ExecuteQueriesFromText extends Mode implements ModeInterface {
 	private String delimiter;
 	private String tripleStoreUri;
 	
-	public ExecuteQueriesFromText(Config config) throws Exception {
-		super(config);
+	public ExecuteQueriesFromText(Config config, String key) throws Exception {
+		super(config, key);
 		
 		//this.initPreparedStatements();
 		queriesFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.updateFile"));
@@ -28,6 +28,7 @@ public class ExecuteQueriesFromText extends Mode implements ModeInterface {
 	 */
 	public void runDaemon() throws Exception {
 		System.out.println(Util.getTime() + "- Running slave daemon in mode: " + Integer.toString(MODE));
+		storeKey();
 		while (true) {
 			process();
 			sleep(this.sleepInterval);

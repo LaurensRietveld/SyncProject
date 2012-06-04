@@ -29,20 +29,20 @@ public class Daemon {
 		this.mode = mode;
 	}
 	
-	public void initDaemon()throws Exception {
+	public void initDaemon(String key)throws Exception {
 		this.loadConfigFile();
 		if (mode == ExecuteQueriesFromGit.MODE) {
-			new ExecuteQueriesFromGit(config);
+			new ExecuteQueriesFromGit(config, key);
 		} else if (mode == ExecuteQueriesFromText.MODE) {
-			new ExecuteQueriesFromText(config);
+			new ExecuteQueriesFromText(config, key);
 		} else if (mode == ImportTriplesFromText.MODE) {
-			new ImportTriplesFromText(config);
+			new ImportTriplesFromText(config, key);
 		} else if (mode == ExecuteQueriesFromDb.MODE) {
-			new ExecuteQueriesFromDb(config);
+			new ExecuteQueriesFromDb(config, key);
 		} else if (mode == ImportTriplesFromGit.MODE) {
-			new ImportTriplesFromGit(config);
+			new ImportTriplesFromGit(config, key);
 		} else if (mode == ImportTriplesFromDb.MODE) {
-			new ImportTriplesFromDb(config);
+			new ImportTriplesFromDb(config, key);
 		}
 	}
 	
@@ -69,6 +69,7 @@ public class Daemon {
 		Options options = new Options();
 		options.addOption(new Option("help", "print this message"));
 		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Mode to run: (1) sync text queries; (2) use DB to sync text queries; (3) sync graph complete graph using rsync; (4) use central (git) server to sync queries; (5) Use central git server to sync graphs; (6) Use DB to sync triples of graph").create("mode"));
+		options.addOption(OptionBuilder.withArgName("key").hasArg().withDescription("Used for experiment setup. This key is stored in experiments database, so the script running the experiments can check when the daemon has started.").create("key"));
 		
 		CommandLineParser parser = new GnuParser();
 		CommandLine commands = null;
@@ -97,10 +98,14 @@ public class Daemon {
 	    		System.exit(1);
 	    	}
 	    }
+	    
         Daemon daemon = new Daemon(mode);
-        
+        String key = "";
+        if (commands.hasOption("key")) {
+        	key = commands.getOptionValue("key");
+        }
 		try {
-			daemon.initDaemon();
+			daemon.initDaemon(key);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

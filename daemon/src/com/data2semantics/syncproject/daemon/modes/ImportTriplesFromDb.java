@@ -16,8 +16,8 @@ public class ImportTriplesFromDb extends Mode implements ModeInterface {
 	private Connection connection;
 	private HashMap<String, PreparedStatement> preparedStatements = new HashMap<String, PreparedStatement>();
 	private String lastUpdate = "";
-	public ImportTriplesFromDb(Config config) throws Exception {
-		super(config);
+	public ImportTriplesFromDb(Config config, String key) throws Exception {
+		super(config, key);
 		Class.forName(config.getString("slave.db.javaDriver"));
 		this.connection = DriverManager.getConnection(config.getString("slave.db.connection"));
 		this.connection.setAutoCommit(false);
@@ -31,6 +31,7 @@ public class ImportTriplesFromDb extends Mode implements ModeInterface {
 	 */
 	public void runDaemon() throws Exception {
 		System.out.println(Util.getTime() + "- Running slave daemon in mode: " + Integer.toString(MODE));
+		storeKey();
 		while (true) {
 			process();
 			sleep(this.sleepInterval);

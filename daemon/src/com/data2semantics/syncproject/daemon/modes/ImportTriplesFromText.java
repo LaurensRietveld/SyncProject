@@ -9,8 +9,8 @@ public class ImportTriplesFromText extends Mode implements ModeInterface {
 	private File dumpFile;
 	private String updateUri;
 	private long fileLastModified = 0;
-	public ImportTriplesFromText(Config config) throws Exception {
-		super(config);
+	public ImportTriplesFromText(Config config, String key) throws Exception {
+		super(config, key);
 		this.dumpFile = new File(config.getString("slave.serializationDir") + "/" + config.getString("serializationMode.dumpFile"));
 		this.updateUri = config.getString("slave.tripleStore.updateUri");
 		runDaemon();
@@ -38,6 +38,7 @@ public class ImportTriplesFromText extends Mode implements ModeInterface {
 	 */
 	public void runDaemon() throws Exception {
 		System.out.println(Util.getTime() + "- Running slave daemon in mode: " + Integer.toString(MODE));
+		storeKey();
 		while (true) {
 			process();
 			sleep(this.sleepInterval);

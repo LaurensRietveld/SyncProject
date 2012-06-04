@@ -15,8 +15,8 @@ public class ExecuteQueriesFromGit extends Mode implements ModeInterface {
 	private File queriesFile;
 	private ProcessBuilder gitPull;
 
-	public ExecuteQueriesFromGit(Config config) throws Exception {
-		super(config);
+	public ExecuteQueriesFromGit(Config config, String key) throws Exception {
+		super(config, key);
 		this.gitPath = new File(config.getString("slave.git.dir") + "/" + config.getString("slave.git.repoDir"));
 		if (!gitPath.exists()) {
 			throw new IOException("Git path does not exist: " + gitPath.getAbsolutePath());
@@ -44,6 +44,7 @@ public class ExecuteQueriesFromGit extends Mode implements ModeInterface {
 	 */
 	public void runDaemon() throws Exception {
 		System.out.println(Util.getTime() + "- Running slave daemon in mode: " + Integer.toString(MODE));
+		storeKey();
 		while (true) {
 			process();
 			sleep(this.sleepInterval);
