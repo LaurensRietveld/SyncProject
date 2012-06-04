@@ -8,8 +8,8 @@
 	echo "\txml dump dir\n";
 	shell_exec("echo '' > ".$config['master']['serializationDir']."/".$config['serializationMode']['dumpFile']);
 	echo "\tGIT dir (incl push/commit)\n";
-	`cd $gitDir; git reset .; git checkout .`;
 	$gitDir = $config['master']['git']['dir']."/".$config['master']['git']['repoDir'];
+	`cd $gitDir; git reset .; git checkout .`;
 	foreach (scandir($gitDir) as $item) {
 		if ($item == '.' || $item == '..' || $item == '.git') continue;
 		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
