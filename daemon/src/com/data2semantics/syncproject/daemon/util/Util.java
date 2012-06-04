@@ -10,7 +10,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -150,5 +152,11 @@ public class Util {
 		}
 		queryString += "}";
 		Util.executeQuery(uri, queryString);
+	}
+	
+	public static String getTime() {
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+		Date dt = new Date();
+		return sdf.format(dt); // formats to 09/23/2009 13:53:28
 	}
 }

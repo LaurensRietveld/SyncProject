@@ -41,9 +41,9 @@ public class ExecuteQueriesFromText extends Mode implements ModeInterface {
 	public void process() throws Exception {
 		if (queriesFile.exists() && executedQueriesFile.exists()) {
 			if ((int)queriesFile.length() != (int)executedQueriesFile.length()) {
-				System.out.print(".");
+				System.out.print(Util.getTime() + "execute queries (mode" + Integer.toString(MODE) + ") ==> ");
 				Util.processTextFileChanges(queriesFile, executedQueriesFile, delimiter, tripleStoreUri);
-				System.out.println(".");
+				System.out.println(Util.getTime() + "done");
 				storeExperimentInfo(MODE);
 			}
 		} else {

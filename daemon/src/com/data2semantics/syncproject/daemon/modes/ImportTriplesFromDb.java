@@ -48,6 +48,7 @@ public class ImportTriplesFromDb extends Mode implements ModeInterface {
 		if (!tableLastUpdated.equals(lastUpdate)) {
 			lastUpdate = tableLastUpdated;
 			String queryString = "";
+			System.out.print(Util.getTime() + "querying db (mode" + Integer.toString(MODE) +") ==> ");
 			ResultSet result = preparedStatements.get("getTriplesToImport").executeQuery();
 			while (result.next()) {
 				queryString += result.getString("subject") + " " +
@@ -56,9 +57,9 @@ public class ImportTriplesFromDb extends Mode implements ModeInterface {
 			}
 			if (queryString.length() > 0) {
 				queryString = "INSERT DATA {\n" + queryString + "}";
-				System.out.print(".");
+				System.out.print(Util.getTime() + "importing ==> ");
 				Util.executeQuery(config.getString("slave.tripleStore.updateUri"), queryString);
-				System.out.println(".");
+				System.out.println(Util.getTime() + "done");
 				storeExperimentInfo(MODE);
 			}
 		}

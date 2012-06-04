@@ -49,15 +49,16 @@ public class ExecuteQueriesFromDb extends Mode implements ModeInterface {
 			newQueries = preparedStatements.get("getNewQueries").executeQuery();
 			boolean hasResult = false;
 			while (newQueries.next()) {
+				
 				hasResult = true;
 				String query = newQueries.getString("Query");
 				Util.executeQuery(config.getString("slave.tripleStore.updateUri"), query);
 				this.storeExecutedQuery(newQueries.getInt("QueryId"));
 			}
 			if (hasResult) {
-				System.out.print(".");
+				System.out.print(Util.getTime() + "execute queries (mode" + Integer.toString(MODE) + ") ==> ");
 				executeBatch();
-				System.out.println(".");
+				System.out.println(Util.getTime() + "done");
 				storeExperimentInfo(MODE);
 			}
 		} catch (SQLException e) {
