@@ -49,11 +49,25 @@
 				//To simulate a proper use case scenario as much as possible, we need to make sure there already exists a serialization of the triplestore as it is now
 				//Otherwise, we would measure how much time it costs to copy the serialization, while we want to know whether for instance rsync can optimize the syncing when just a part of the serialization has changed
 				//To serialize the triple (without actually changing the triple store, we need to send an update statement which will fail (thus not change the triplestore)
+				
 				$fields = array(
 					"mode" => $mode,
 					"query" => "bla" //will fail, but will also make sure the graph is serialized
 				);
+				//First get current timestamp from db. This way we can wait for the processing of this post, before continuing
+				$query = "SELECT NOW() FROM Daemon LIMIT 1";
+				$result = mysql_query($query);
+				$timestamp = reset(mysql_fetch_array($result));
 				doPost($config['master']['restlet']['updateUri'], $fields);
+				
+				while (true) {
+					if (daemonFinished($mode, $timestamp)) {
+						break;
+						echo "\n";
+					} else {
+						echo "w";
+					}
+				}
 			} 
 				
 			
@@ -76,15 +90,41 @@
 			);
 			doPost($config['master']['restlet']['updateUri'], $fields);
 			//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
-			echo ".\n";
-			$nQueries++;
-			if ($nQueries <= $config['args']['nChanges']) {
-				//wait x seconds, so we have time to measure everything (but not after the last run, as there is no use)
-				sleep($waitingTimes[$mode]); 
-			}
+			waitForFinish($mode, (int)$nQueries, $config['args']['runId']);
 		}
 	}
 
+	
+	function waitForFinish($mode, $nQueries, $runId) {
+		//Get timestamp from before this experiment
+		$query = "SELECT MAX(Timestamp) FROM Experiments WHERE  Mode = ".(int)$mode." AND nChanges = ".(int)$nQueries." AND RunId = '".$runId."'";
+		$result = mysql_query($query);
+		$timestamp = reset(mysql_fetch_array($result));
+		if (!$timestamp) {
+			echo "No timestamp inserted by experiment. Strange. Stopping...\n";
+			exit;
+		}
+		while (true) {
+			echo "w";
+			sleep(5);
+			if (daemonFinished) {
+				break;
+				echo "\n";
+			}
+			
+		}
+	}
+	
+	function daemonFinished($mode, $timestamp) {
+		$finished = false;
+		$query = "SELECT Timestamp FROM Daemon WHERE  Mode = ".(int)$mode." AND Timestamp > '".$timestamp."'";
+		$result = mysql_query($query);
+		if (mysql_num_rows($result) > 0) {
+			$finished = true;
+		}
+		return $finished;
+	}
+ 	
 	function getDeleteInsertQuery($mapping) {
 		if (!is_array($mapping)) {
 			echo "Something is wrong. Can't create query from empty mapping. exiting...\n";
