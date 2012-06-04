@@ -50,7 +50,7 @@ public class ImportTriplesFromGit extends Mode implements ModeInterface {
 	 * @throws Exception
 	 */
 	public void runDaemon() throws Exception {
-		System.out.println("Running slave daemon in mode: " + Integer.toString(MODE));
+		System.out.println(Util.getTime() + "- Running slave daemon in mode: " + Integer.toString(MODE));
 		while (true) {
 			process();
 			sleep(this.sleepInterval);
