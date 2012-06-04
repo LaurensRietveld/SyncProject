@@ -8,12 +8,13 @@
 	echo "\txml dump dir\n";
 	shell_exec("echo '' > ".$config['master']['serializationDir']."/".$config['serializationMode']['dumpFile']);
 	echo "\tGIT dir (incl push/commit)\n";
+	`cd $gitDir; git reset .; git checkout .`;
 	$gitDir = $config['master']['git']['dir']."/".$config['master']['git']['repoDir'];
 	foreach (scandir($gitDir) as $item) {
 		if ($item == '.' || $item == '..' || $item == '.git') continue;
 		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
 	}
-	`cd $gitDir; git reset .;git pull -q;git add .; git commit -qam "cleaning dir"; git push -q origin master`;
+	`cd $gitDir; git pull -q;git add .; git commit -qam "cleaning dir"; git push -q origin master`;
 	echo "\tDB\n";
 	$db = mysql_connect("localhost:3306", "syncProject");
 	if (!$db) die('Could not connect: ' . mysql_error());
