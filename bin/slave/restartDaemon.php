@@ -18,4 +18,4 @@
 	} else {
 		echo "Starting Daemon ====\n";
 	}
-	$result = shell_exec("java -jar /usr/local/share/syncProject/daemon.jar --mode ".$mode." > /usr/local/share/syncProject/logs/daemon.txt &");
+	$result = shell_exec("java -jar /usr/local/share/syncProject/daemon.jar --mode ".$mode." >> /usr/local/share/syncProject/logs/daemon.txt &");
