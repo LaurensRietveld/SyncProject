@@ -60,8 +60,20 @@ public class LogQueriesGit extends GenericLogger{
 	}
 	
 	public void loggingCallback() throws Exception {
-		Util.executeCmd(gitCommit);
-		Util.executeCmd(gitPush);
+		int i = 0;
+		while (i < 5) {
+			try {
+				
+				Util.executeCmd(gitCommit);
+				Util.executeCmd(gitPush);
+			} catch (Exception e) {
+				i++;
+				getMain().getLogger().severe("Exception, but retrying... " + e.getMessage());
+			}
+		}
+		if (i == 5) {
+			throw new Exception("Unable to perform git and push commands, even after 5 tries.");
+		}
 	}
 
 }
