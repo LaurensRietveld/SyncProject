@@ -5,7 +5,7 @@
 	$config = getConfig();
 	
 	$nTriples = $argv[1];
-	if ($nTriples) {
+	if (!$nTriples) {
 		$nTriples = 1000;
 	}
 	
@@ -25,7 +25,7 @@
 		file_put_contents($turtleFile, $triples);
 		shell_exec("rm ".$turtleFile.".bak");
 	} else {
-		echo "\tSP2 file already exists. Using that one.\n";
+		//echo "\tSP2 file already exists. Using that one.\n";
 	}
 
 	//echo "\tImporting to slave\n";
