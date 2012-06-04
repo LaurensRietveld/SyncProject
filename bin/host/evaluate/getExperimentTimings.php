@@ -6,26 +6,26 @@
 	
 	$db = mysql_connect("localhost:3306", "syncProject");
 	if (!$db) die('Could not connect: ' . mysql_error());
-
+	
 	mysql_select_db("Experiments");
-		
+	
 	getTimeDifferences($config);
 	
 	function getTimeDifferences($config) {
 		$query = "SELECT * FROM Experiments WHERE Mode =".(int)$config['args']['mode']." AND RunId = '".$config['args']['runId']."' ORDER BY ExperimentId ASC";
 		$result = mysql_query($query);
 		while ($row = mysql_fetch_array($result)) {
-			$query = "SELECT Timestamp FROM Daemon WHERE 
-				Node = 'slave' 
-				AND Mode = ".(int)$config['args']['mode']." 
-				AND Timestamp >= '".$row['Timestamp']."'
-				ORDER BY Timestamp ASC LIMIT 1";
+			$query = "SELECT Timestamp FROM Daemon WHERE
+			Node = 'slave'
+			AND Mode = ".(int)$config['args']['mode']."
+			AND Timestamp >= '".$row['Timestamp']."'
+			ORDER BY Timestamp ASC LIMIT 1";
 			$result2 = mysql_query($query);
 			$row2 = mysql_fetch_array($result2);
-			
+				
 			//Difference between executing queries on restlet, and the first time after that the slave finished executing it's import
 			echo ($row['Timestamp']) ." < ". ($row2['Timestamp'])." -- diff: ".(strtotime($row2['Timestamp']) - strtotime($row['Timestamp']))." sec.\n";
-			
+				
 		}
 	}
 	
@@ -52,11 +52,11 @@
 			echo "Available arguments: \n";
 			foreach ($longArgs AS $arg => $description) {
 				echo "\t--".str_replace(":", "", $arg)." - ".$description."\n";
-				
+	
 			}
 			exit;
 		}
-		
+	
 		if ((int)$args['mode'] === 0) {
 			echo "No valid mode provided. Exiting\n";
 			exit;
@@ -67,3 +67,4 @@
 		}
 		return $args;
 	}
+	
