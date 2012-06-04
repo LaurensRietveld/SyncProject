@@ -8,25 +8,13 @@
 	if (!$db) die('Could not connect: ' . mysql_error());
 	mysql_select_db("Experiments");
 	
-	
-	
-	//Time to wait between runs for each mode. Setting it too short means runs (daemons) will overlap and skew the experiments
-	$waitingTimes = array(
-		1 => 6,
-		2 => 6,
-		3 => 40,
-		4 => 6,
-		5 => 40,
-		6 => 40
-	);
-	
 	$runningVMs = shell_exec("VBoxManage list runningvms");
 	if (strpos($runningVMs, "Git Server") === false || strpos($runningVMs, "Debian Master") === false || strpos($runningVMs, "Debian Slave") === false) {
 		echo "Not all node are running. Required nodes: 'Debian Git Server', 'Debian Master', 'Debian Slave'. Exiting...\n";
 		exit;
 	}
 	
-	resetNodes(); //reset node before loading mappings, as resetting loads triples needed to create the mappings.
+	resetNodes($config['args']['nTriples']); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
 	$mappings = loadChangesToExecute($config);
 	if (!count($mappings)) {
 		echo "No mappings loaded from triplestore. Exiting...\n";
@@ -41,36 +29,8 @@
 		//Do n number of test runs, and for each run, execute n queries
 		$nQueries = 1;
 		while ($nQueries <= $config['args']['nChanges']) {
-			resetNodes();
-			
-			if ($mode == 3 || $mode == 5 || $mode == 6 ) {
-				//These mode serialized the triple stores, and then sync them
-				//The 'resetNode' functionality cleared the slave and master nodes, which means there are no existing serializations on disc
-				//To simulate a proper use case scenario as much as possible, we need to make sure there already exists a serialization of the triplestore as it is now
-				//Otherwise, we would measure how much time it costs to copy the serialization, while we want to know whether for instance rsync can optimize the syncing when just a part of the serialization has changed
-				//To serialize the triple (without actually changing the triple store, we need to send an update statement which will fail (thus not change the triplestore)
-				
-				$fields = array(
-					"mode" => $mode,
-					"query" => "bla" //will fail, but will also make sure the graph is serialized
-				);
-				//First get current timestamp from db. This way we can wait for the processing of this post, before continuing
-				$query = "SELECT NOW() FROM Daemon LIMIT 1";
-				$result = mysql_query($query);
-				$timestamp = reset(mysql_fetch_array($result));
-				doPost($config['master']['restlet']['updateUri'], $fields);
-				
-				while (true) {
-					if (daemonFinished($mode, $timestamp)) {
-						break;
-						echo "\n";
-					} else {
-						echo "w";
-					}
-				}
-			} 
-				
-			
+			resetNodes($config['args']['nTriples']);
+			prepareExports($config, $mode);
 			
 			sleep(1);
 			echo "Mode: ".$mode." - nChanges: ".$nQueries;
@@ -83,7 +43,8 @@
 				$n++;
 			}
 			echo ".";
-			mysql_query("INSERT INTO Experiments (Mode, nChanges, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", '".$config['args']['runId']."');");
+			mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$config['args']['nTriples'].", '".$config['args']['runId']."');");
+			//startInterfaceListener($config, $mode, $nQueries);
 			$fields = array(
 					"mode" => $mode,
 					"query" => $queriesToExecute
@@ -91,9 +52,64 @@
 			doPost($config['master']['restlet']['updateUri'], $fields);
 			//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
 			waitForFinish($mode, (int)$nQueries, $config['args']['runId']);
+			//stopInterfaceListener();
+			$nQueries++;
 		}
 	}
-
+	
+	
+	function prepareExports($config, $mode) {
+		//These mode serialized the triple stores, and then sync them
+		//The 'resetNode' functionality cleared the slave and master nodes, which means there are no existing serializations on disc
+		//To simulate a proper use case scenario as much as possible, we need to make sure there already exists a serialization of the triplestore as it is now
+		//Otherwise, we would measure how much time it costs to copy the serialization, while we want to know whether for instance rsync can optimize the syncing when just a part of the serialization has changed
+		//To serialize the triple (without actually changing the triple store, we need to send an update statement which will fail (thus not change the triplestore)
+		$fields = array(
+				"mode" => $mode,
+				"query" => "bla" //will fail, but will also make sure the graph is serialized
+		);
+		//First get current timestamp from db. This way we can wait for the processing of this post, before continuing
+		$query = "SELECT NOW() FROM Daemon LIMIT 1";
+		$result = mysql_query($query);
+		$timestamp = reset(mysql_fetch_array($result));
+		doPost($config['master']['restlet']['updateUri'], $fields);
+	
+		while (true) {
+			if (daemonFinished($mode, $timestamp)) {
+				echo "\n";
+				break;
+			} else {
+				echo "w";
+				sleep(3);
+			}
+		}
+	}
+	
+	function startInterfaceListener($config, $mode, $nQueries) {
+		$logdir = $config['experiments']['netStats']."/".$config['args']['runId']."/mode".$mode;
+		//var_export($logdir);exit;
+		if (!file_exists($logdir)) {
+			mkdir($logdir, 0777, true);
+		}
+		$storeInFile = $logdir."/".$nQueries.".log";
+// 		$cmd = "sudo tcpdump -nq -i vboxnet0 > ".$storeInFile." &";
+		shell_exec($cmd);
+		echo "\tStarted tcpdump as daemon\n";
+		
+	}
+	
+	function stopInterfaceListener() {
+		$result = shell_exec("ps axuwww | grep tcpdump | grep -v grep");
+		preg_match_all("/\s*root\s*(\d*).*/", $result, $matches);
+		if (is_array($matches[1])) {
+			echo "\tStopped tcp dump instances\n";
+			foreach ($matches[1] as $match) {
+				shell_exec("sudo kill ".(int)$match);
+			}
+		} else {
+			echo "\tNo tcp dump instance to kill";
+		}
+	}
 	
 	function waitForFinish($mode, $nQueries, $runId) {
 		//Get timestamp from before this experiment
@@ -106,7 +122,7 @@
 		}
 		while (true) {
 			echo "w";
-			sleep(5);
+			sleep(3);
 			if (daemonFinished) {
 				break;
 				echo "\n";
@@ -164,10 +180,10 @@
 	/**
 	 * Reset nodes to initial state by deleting/emptying dirs, db, and reinserting data in triplestore
 	 */
-	function resetNodes() {
+	function resetNodes($nTriples) {
 		echo shell_exec("ssh master /home/lrd900/gitCode/bin/master/resetNode.php");
 		echo shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/resetNode.php");
-		echo shell_exec(__DIR__."/../management/insertSP2Data.php");
+		echo shell_exec(__DIR__."/../management/insertSP2Data.php ".$nTriples);
 	}
 	
 	
@@ -238,7 +254,8 @@
 		$longArgs  = array(
 				"help" => "Show help info",
 				"mode:" => "Mode to run experiments in: \n\t  (1) sync text queries; \n\t  (2) use DB; \n\t  (3) sync graph; \n\t  (4) central (git) server. Use comma seperated to run for multiple modes",
-				"nChanges:" => "How many changes to execute per iteration (default 100)",
+				"nChanges:" => "How many changes to execute per iteration (default 100).",
+				"nTriples:" => "How many triples to execute experiment on (default 1000).", 
 				"runId:" => "Id to run experiment for. Uses timestamp if none provided",
 		);
 		//: => required value, :: => optional value, no semicolon => no value (boolean)
@@ -270,12 +287,17 @@
 			}
 		}
 		$args['mode'] = $modes;
+		
 		if (!$args['nChanges']) {
 			$args['nChanges'] = 100;
 		}
 		
 		if (!strlen($args['runId'])) {
 			$args['runId'] = date("Ymd H:i");
+		}
+		
+		if (!$args['nTriples']) {
+			$args['nTriples'] = 1000;
 		}
 		return $args;
 	}

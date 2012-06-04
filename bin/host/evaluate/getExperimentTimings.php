@@ -12,7 +12,7 @@
 	getTimeDifferences($config);
 	
 	function getTimeDifferences($config) {
-		$query = "SELECT * FROM Experiments WHERE Mode =".(int)$config['args']['mode']." AND RunId = '".$config['args']['runId']."' ORDER BY ExperimentId ASC";
+		$query = "SELECT * FROM Experiments WHERE Mode =".(int)$config['args']['mode']." AND RunId = '".$config['args']['runId']."' AND nTriples = ".$config['args']['nTriples']." ORDER BY ExperimentId ASC";
 		$result = mysql_query($query);
 		while ($row = mysql_fetch_array($result)) {
 			$query = "SELECT Timestamp FROM Daemon WHERE
@@ -39,6 +39,7 @@
 				"help" => "Show help info",
 				"mode:" => "Mode to check experiments for: \n\t  (1) sync text queries; \n\t  (2) use DB; \n\t  (3) sync graph; \n\t  (4) central (git) server.",
 				"runId:" => "Id to run experiment for. Uses timestamp if none provided",
+				"nTriples:" => "Id to run experiment for. Uses timestamp if none provided",
 		);
 		//: => required value, :: => optional value, no semicolon => no value (boolean)
 		$args = getopt("", array_keys($longArgs));
@@ -63,6 +64,10 @@
 		}
 		if (!strlen($args['runId'])) {
 			echo "No run id provided. Exiting\n";
+			exit;
+		}
+		if ((int)$args['nTriples'] === 0) {
+			echo "No number of triples to get results for provided. Exiting\n";
 			exit;
 		}
 		return $args;
