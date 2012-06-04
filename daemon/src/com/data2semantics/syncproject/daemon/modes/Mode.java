@@ -28,7 +28,7 @@ public class Mode {
 		insertExperimentInto = expConnection.prepareStatement(
 			"INSERT INTO Daemon (Mode,Node)\n" +
 			"VALUES (?, ?)");
-		insertKey = expConnection.prepareStatement("INSERT INTO DaemonRunning (Key) VALUES (?)");
+		insertKey = expConnection.prepareStatement("INSERT INTO DaemonRunning (`Key`) VALUES (?)");
 	}
 	
 	/**

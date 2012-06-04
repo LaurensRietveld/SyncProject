@@ -27,15 +27,15 @@
 	foreach ($config['args']['mode'] AS $mode) {
 		$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
 		shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
-		sleep(10);
+		waitForDaemonToStart($uniqueKey);
 		//Do n number of test runs, and for each run, execute n queries
 		$nQueries = 1;
 		while ($nQueries <= $config['args']['nChanges']) {
 			resetNodes($config['args']['nTriples']);
 			prepareExports($config, $mode);
-			$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode;
+			$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
 			shell_exec($cmd);
-			sleep(10);
+			waitForDaemonToStart($uniqueKey);
 			echo "Mode: ".$mode." - nChanges: ".$nQueries;
 			
 			$queriesToExecute = array();
@@ -54,7 +54,7 @@
 			);
 			doPost($config['master']['restlet']['updateUri'], $fields);
 			//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
-			waitForFinish($mode, (int)$nQueries, $config['args']['runId']);
+			waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId']);
 			//stopInterfaceListener();
 			$nQueries++;
 		}
@@ -114,7 +114,7 @@
 		}
 	}
 	
-	function waitForFinish($mode, $nQueries, $runId) {
+	function waitForRunToFinish($mode, $nQueries, $runId) {
 		//Get timestamp from before this experiment
 		$query = "SELECT MAX(Timestamp) FROM Experiments WHERE  Mode = ".(int)$mode." AND nChanges = ".(int)$nQueries." AND RunId = '".$runId."'";
 		$result = mysql_query($query);
@@ -131,6 +131,21 @@
 				break;
 			}
 			
+		}
+	}
+	
+	function waitForDaemonToStart($uniqueKey) {
+		$query = "SELECT * FROM DaemonRunning WHERE `Key` = '".$uniqueKey."'";
+		echo $query;exit;
+		while (true) {
+			$result = mysql_query($query);
+			if (mysql_num_rows($result) > 0) {
+				echo "\n";
+				break;
+			} else {
+				echo "w";
+				sleep(3);
+			}
 		}
 	}
 	
