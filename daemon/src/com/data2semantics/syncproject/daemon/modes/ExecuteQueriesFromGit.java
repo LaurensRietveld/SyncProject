@@ -61,7 +61,7 @@ public class ExecuteQueriesFromGit extends Mode implements ModeInterface {
 //			System.out.println("File containing queries executed on master does not exist. Wait.");
 		} else if (changed) {
 			//Something changed
-			System.out.print(Util.getTime() + "execute queries (mode" + Integer.toString(MODE) + ") ==> ");
+			System.out.println(Util.getTime() + "execute queries (mode" + Integer.toString(MODE) + ")");
 			Util.processTextFileChanges(queriesFile, executedQueries, delimiter, tripleStoreUri);
 			System.out.println(Util.getTime() + "done");
 			storeExperimentInfo(MODE);

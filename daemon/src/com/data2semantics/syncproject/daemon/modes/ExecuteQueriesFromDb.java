@@ -56,7 +56,7 @@ public class ExecuteQueriesFromDb extends Mode implements ModeInterface {
 				this.storeExecutedQuery(newQueries.getInt("QueryId"));
 			}
 			if (hasResult) {
-				System.out.print(Util.getTime() + "execute queries (mode" + Integer.toString(MODE) + ") ==> ");
+				System.out.println(Util.getTime() + "execute queries (mode" + Integer.toString(MODE) + ")");
 				executeBatch();
 				System.out.println(Util.getTime() + "done");
 				storeExperimentInfo(MODE);

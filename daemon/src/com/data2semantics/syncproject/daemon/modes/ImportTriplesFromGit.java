@@ -39,7 +39,7 @@ public class ImportTriplesFromGit extends Mode implements ModeInterface {
 		if (!dumpFile.exists()) {
 			//System.out.println("WARNING: dump file does not exist");
 		} else if (changed) {
-			System.out.print(Util.getTime() + "importing (mode" + Integer.toString(MODE) +")  ==> ");
+			System.out.println(Util.getTime() + "importing (mode" + Integer.toString(MODE) +")");
 			Util.importDumpFile(dumpFile, updateUri);
 			System.out.println(Util.getTime() + "done");
 			storeExperimentInfo(MODE);
