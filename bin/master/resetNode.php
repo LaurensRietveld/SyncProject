@@ -9,7 +9,7 @@
 	shell_exec("echo '' > ".$config['master']['serializationDir']."/".$config['serializationMode']['dumpFile']);
 	echo "\tGIT dir (incl push/commit)\n";
 	$gitDir = $config['master']['git']['dir']."/".$config['master']['git']['repoDir'];
-	`cd $gitDir; git reset .; git checkout .`;
+	`cd $gitDir; git reset .;`;
 	foreach (scandir($gitDir) as $item) {
 		if ($item == '.' || $item == '..' || $item == '.git') continue;
 		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
