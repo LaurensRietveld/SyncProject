@@ -2,8 +2,8 @@
 <?php
 	include(__DIR__."/../util.php");
 	$config = getConfig();
-	$startTcp = $config['experiments']['experimentCacheDir']."/startTcpDump";
-	$stopTcp = $config['experiments']['experimentCacheDir']."/stopTcpDump";
+	$startTcp = $config['experiments']['experimentCacheDir']."/m_startTcpDump";
+	$stopTcp = $config['experiments']['experimentCacheDir']."/m_stopTcpDump";
 	$storeFile = $config['experiments']['experimentCacheDir']."/tcpDump/m_dump.txt";
 	while (true) {
 		//check whether I need to start daemon
