@@ -12,34 +12,41 @@ class InterfaceListener {
 		$this->nQueries = $nQueries;
 		$this->nTriples = $nTriples;
 		$this->iteration = $iteration;
-		$this->logDir = $config['experiments']['experimentCacheDir']."/network/".$config['args']['runId']."/mode_".$mode."/nTriples_".$nTriples."/nChanges_".$nQueries;
+		//$this->logDir = $config['experiments']['experimentCacheDir']."/network/".$config['args']['runId']."/mode_".$mode."/nTriples_".$nTriples."/nChanges_".$nQueries;
+		$this->logDir = $config['experiments']['experimentCacheDir']."/network";
 	}
 	public function start() {
-		$nodes = array(
-				'master' => "192.168.56.111",
-				'slave' => "192.168.56.122",
-				'gitServer' => "192.168.56.133",
-		);
-		//master logs every connection between itself and slave / gitserver
-		$masterExpression = getExpressionForNodes($nodes);
+// 		$nodes = array(
+// 				'master' => "192.168.56.111",
+// 				'slave' => "192.168.56.122",
+// 				'gitServer' => "192.168.56.133",
+// 		);
+// 		//master logs every connection between itself and slave / gitserver
+// 		$masterExpression = $this->getExpressionForNodes($nodes);
 		 
-		//for slave expression, we just want to measure connection between slave/gitserver. Rest is already covered by master logging
-		unset($nodes['master']); 
-		$slaveExpression = getExpressionForNodes($nodes);
+// 		//for slave expression, we just want to measure connection between slave/gitserver. Rest is already covered by master logging
+// 		unset($nodes['master']); 
+// 		$slaveExpression = $this->getExpressionForNodes($nodes);
 
-		if (file_exists($this->logDir)) {
-			//Clean log dir, to avoid reloading old data into db
-			shell_exec('rm -rf '.$this->logDir);
-		}
+// 		if (file_exists($this->logDir)) {
+// 			//Clean log dir, to avoid reloading old data into db
+// 			shell_exec('rm -rf '.$this->logDir);
+// 		}
 		
-		mkdir($this->logDir, 0777, true);
-		$masterFile = $this->logDir."/master_i-".$this->iteration.".log";
-		$slaveFile = $this->logDir."/slave_i-".$this->iteration.".log";
-		$cmd = "ssh -t slave \"sudo tcpdump -nq -i eth1 ".$masterExpression." > ".$storeInFile." &\"";
-		$cmd = "ssh -t master \"sudo tcpdump -nq -i eth1 ".$slaveExpression." > ".$storeInFile." &\"";
-		//echo $cmd;exit;
-		shell_exec($cmd);
-		echo "\tStarted tcpdump as daemon\n";
+// 		mkdir($this->logDir, 0777, true);
+// 		$masterFile = $this->logDir."/master_i-".$this->iteration.".log";
+// 		$slaveFile = $this->logDir."/slave_i-".$this->iteration.".log";
+// 		$cmdMaster = "ssh -t slave \"nohup sudo tcpdump -nq -i eth1 ".$masterExpression." > ".$masterFile." &\"";
+// 		$cmdSlave = "ssh -t master \"nohup sudo tcpdump -nq -i eth1 ".$slaveExpression." > ".$slaveFile." &\"";
+// 		echo $cmdMaster."\n";
+// 		echo $cmdSlave;exit;
+// 		shell_exec($cmdMaster);
+// 		shell_exec($cmdSlave);
+// 		echo "\tStarted tcpdump as daemon\n";
+		
+		shell_exec('ssh slave '.$config['experiments']['experimentCacheDir'].'/s_startTcpDump');
+		shell_exec('ssh master '.$config['experiments']['experimentCacheDir'].'/m_startTcpDump');
+		sleep(1);
 		
 	}
 	
@@ -61,7 +68,7 @@ class InterfaceListener {
 			$handle = fopen($filename, "r");
 			if ($handle) {
 				while (($line = fgets($handle, 4096)) !== false) {
-					if (strlen(trim($line)) && !strpos("ARP. Request who-has", $line)) {
+					if (strlen(trim($line))) {
 						$line = trim($line);
 						
 						$time = "([\d:]*)[\d\.]* IP ";
@@ -80,10 +87,10 @@ class InterfaceListener {
 						} else if (count($matches) == 9) {
 							list(,$time, $fromIp, $fromPort, $toIp, $toPort, $protocol,,$size) = $matches;
 						} else {
-							echo "Strange... Incorrect matches from preg match: \n";
-							var_export($matches);
-							var_export($line);
-							exit;
+							//echo "Strange... Incorrect matches from preg match: \n";
+							//var_export($matches);
+							//var_export($line);
+							//exit;
 						}
 						$queryArray = array(
 							'Time' => "'".$time."'",
