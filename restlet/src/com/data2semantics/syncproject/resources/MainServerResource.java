@@ -6,7 +6,7 @@ import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ServerResource;
 import com.data2semantics.syncproject.EntryPoint;
-import com.data2semantics.syncproject.logging.*;
+import com.data2semantics.syncproject.master.logging.*;
 import com.data2semantics.syncproject.util.Util;
 
 /**
