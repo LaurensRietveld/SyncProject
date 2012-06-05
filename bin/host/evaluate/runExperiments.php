@@ -63,7 +63,7 @@
 					doPost($config['master']['restlet']['updateUri'], $fields);
 					//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
 					waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
-					$interfaceListener->stop();
+					$interfaceListener->stop(mysql_insert_id());
 					$iteration++;
 				}
 				$nQueries++;

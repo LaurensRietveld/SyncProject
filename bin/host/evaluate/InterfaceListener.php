@@ -25,9 +25,11 @@ class InterfaceListener {
 		//$expression = '\(\(src '.$hosts.'\) and \(src '.$hosts.'\)\)';
 		
 		//var_export($logdir);exit;
-		if (!file_exists($this->logDir)) {
-			mkdir($this->logDir, 0777, true);
+		if (file_exists($this->logDir)) {
+			//Clean log dir, to avoid reloading old data into db
+			shell_exec('rm -rf '.$this->logDir);
 		}
+		mkdir($this->logDir, 0777, true);
 		$storeInFile = $this->logDir."/i-".$this->iteration.".log";
 		$cmd = "sudo tcpdump -nq -i vboxnet0 > ".$storeInFile." &";
 		//echo $cmd;exit;
@@ -36,7 +38,7 @@ class InterfaceListener {
 		
 	}
 	
-	public function stop() {
+	public function stop($experimentId) {
 		$result = shell_exec("ps axuwww | grep tcpdump | grep -v grep");
 		preg_match_all("/\s*root\s*(\d*).*/", $result, $matches);
 		if (is_array($matches[1])) {
@@ -44,23 +46,25 @@ class InterfaceListener {
 			foreach ($matches[1] as $match) {
 				shell_exec("sudo kill ".(int)$match);
 			}
-			$this->storeResults();
+			$this->storeResults($experimentId);
 		} else {
 			echo "\tNo tcp dump instance to kill";
 		}
 		
 	}
-	private function storeResults() {
+	private function storeResults($experimentId) {
 		$files = scandir($this->logDir);
 		foreach ($files as $filename) {
-			$handle = @fopen($filename, "r");
+			$filename = $this->logDir."/".$filename;
+			$handle = fopen($filename, "r");
 			if ($handle) {
 				while (($line = fgets($handle, 4096)) !== false) {
 					if (strlen(trim($line))) {
+						$line = trim($line);
 						$time = "([\d:]*)[\d\.]* IP ";
 						$fromIp = "(\d*\.\d*\.\d*\.\d*)\.";
 						$fromPort = "(\d*) > ";
-						$toIp = "(\d*\.\d*\.\d*\.\d*)";
+						$toIp = "(\d*\.\d*\.\d*\.\d*)\.";
 						$toPort = "(\d*): ";
 						$protocol = "(tcp|UDP)";
 						$size = "(, length (\d*)| (\d*))";
@@ -69,25 +73,41 @@ class InterfaceListener {
 						preg_match($pattern, $line, $matches);
 						$row = array();
 						if (count($matches) == 10) {
-							list(,$row['Time'], $row['FromIp'],$row['FromPort'], $row['ToIp'], $row['ToPort'], $row['Protocol'],,,$row['Size']) = $matches;
+							list(,$time, $fromIp, $fromPort, $toIp, $toPort, $protocol,,,$size) = $matches;
 						} else if (count($matches) == 9) {
-							list(,$row['Time'], $row['FromIp'], $row['FromPort'], $row['ToIp'], $row['ToPort'], $row['Protocol'], ,$row['Size']) = $matches;
+							list(,$time, $fromIp, $fromPort, $toIp, $toPort, $protocol,,$size) = $matches;
 						} else {
 							echo "Strange... Incorrect matches from preg match: \n";
 							var_export($matches);
 							var_export($line);
 							exit;
 						}
-						$query = "INSERT INTO Packets (".implode(", ", array_keys($row)).") VALUES (".implode(", ", $row).")";
-						mysql_query($query);
+						$queryArray = array(
+							'Time' => "'".$time."'",
+							'FromIp' => "'".$fromIp."'",
+							'FromPort' => $fromPort,
+							'ToIp' => "'".$toIp."'",
+							'ToPort' => $toPort,
+							'Protocol' => "'".$protocol."'",
+							'Size' => $size,
+							'ExperimentId' => $experimentId
+						);
+						$query = "INSERT INTO Packets (".implode(", ", array_keys($queryArray)).") VALUES (".implode(", ", $queryArray).")";
+						if (!mysql_query($query)) {
+							die('Error executing mysql: ' . mysql_error());
+						}
 					}
 				}
 				if (!feof($handle)) {
 					echo "Error: unexpected fgets() fail on $filename\n";
 					exit;
 				}
+				fclose($handle);
+			} else {
+				echo "cannot open file: ".$filename."\n";
+				exit;
 			}
-			fclose($handle);
+			
 		}
 	}
 	
