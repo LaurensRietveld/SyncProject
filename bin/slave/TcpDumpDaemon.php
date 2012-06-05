@@ -3,7 +3,6 @@
 	include(__DIR__."/../util.php");
 	$config = getConfig();
 	$startTcp = $config['experiments']['experimentCacheDir']."/s_startTcpDump";
-	$stopTcp = $config['experiments']['experimentCacheDir']."/s_stopTcpDump";
 	$storeFile = $config['experiments']['experimentCacheDir']."/network/s_dump.txt";
 	while (true) {
 		//check whether I need to start daemon
@@ -12,14 +11,6 @@
 			startDaemon($storeFile);
 			unlink($startTcp);
 		}
-		if (file_exists($stopTcp)) {
-			stopDaemon();
-			unlink($stopTcp);
-		}
-	}
-	
-	function stopDaemon() {
-		shell_exec("/home/lrd900/gitCode/bin/slave/stopTcpDump.php");
 	}
 	
 	function startDaemon($storeInFile) {
