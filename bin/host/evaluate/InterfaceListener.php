@@ -12,7 +12,7 @@ class InterfaceListener {
 		$this->nQueries = $nQueries;
 		$this->nTriples = $nTriples;
 		$this->iteration = $iteration;
-		$this->logDir = $config['experiments']['experimentCacheDir']."/".$config['args']['runId']."/mode_".$mode."/nTriples_".$nTriples."/nChanges_".$nQueries;
+		$this->logDir = $config['experiments']['experimentCacheDir']."/network/".$config['args']['runId']."/mode_".$mode."/nTriples_".$nTriples."/nChanges_".$nQueries;
 	}
 	public function start() {
 		$nodes = array(
@@ -20,18 +20,23 @@ class InterfaceListener {
 				'slave' => "192.168.56.122",
 				'gitServer' => "192.168.56.133",
 		);
-		$hosts = 'host '.implode(" or src host ", $nodes);
-		
-		//$expression = '\(\(src '.$hosts.'\) and \(src '.$hosts.'\)\)';
-		
-		//var_export($logdir);exit;
+		//master logs every connection between itself and slave / gitserver
+		$masterExpression = getExpressionForNodes($nodes);
+		 
+		//for slave expression, we just want to measure connection between slave/gitserver. Rest is already covered by master logging
+		unset($nodes['master']); 
+		$slaveExpression = getExpressionForNodes($nodes);
+
 		if (file_exists($this->logDir)) {
 			//Clean log dir, to avoid reloading old data into db
 			shell_exec('rm -rf '.$this->logDir);
 		}
+		
 		mkdir($this->logDir, 0777, true);
-		$storeInFile = $this->logDir."/i-".$this->iteration.".log";
-		$cmd = "sudo tcpdump -nq -i vboxnet0 > ".$storeInFile." &";
+		$masterFile = $this->logDir."/master_i-".$this->iteration.".log";
+		$slaveFile = $this->logDir."/slave_i-".$this->iteration.".log";
+		$cmd = "ssh -t slave \"sudo tcpdump -nq -i eth1 ".$masterExpression." > ".$storeInFile." &\"";
+		$cmd = "ssh -t master \"sudo tcpdump -nq -i eth1 ".$slaveExpression." > ".$storeInFile." &\"";
 		//echo $cmd;exit;
 		shell_exec($cmd);
 		echo "\tStarted tcpdump as daemon\n";
@@ -39,18 +44,15 @@ class InterfaceListener {
 	}
 	
 	public function stop($experimentId) {
-		$result = shell_exec("ps axuwww | grep tcpdump | grep -v grep");
-		preg_match_all("/\s*root\s*(\d*).*/", $result, $matches);
-		if (is_array($matches[1])) {
-			echo "\tStopped tcp dump instances\n";
-			foreach ($matches[1] as $match) {
-				shell_exec("sudo kill ".(int)$match);
-			}
-			$this->storeResults($experimentId);
-		} else {
-			echo "\tNo tcp dump instance to kill";
-		}
-		
+		shell_exec("ssh -t slave /home/lrd900/gitCode/bin/slave/stopTcpDump.php");
+		shell_exec("ssh -t master /home/lrd900/gitCode/bin/master/stopTcpDump.php");
+		$this->storeResults($experimentId);
+	}
+	
+	private function getExpressionForNodes($nodes) {
+		$srcHosts = 'host '.implode(" or src host ", $nodes);
+		$dstHosts = 'host '.implode(" or dst host ", $nodes);
+		return '\(\(src '.$srcHosts.'\) and \(dst '.$dstHosts.'\)\)';
 	}
 	private function storeResults($experimentId) {
 		$files = scandir($this->logDir);
@@ -59,8 +61,9 @@ class InterfaceListener {
 			$handle = fopen($filename, "r");
 			if ($handle) {
 				while (($line = fgets($handle, 4096)) !== false) {
-					if (strlen(trim($line))) {
+					if (strlen(trim($line)) && !strpos("ARP. Request who-has", $line)) {
 						$line = trim($line);
+						
 						$time = "([\d:]*)[\d\.]* IP ";
 						$fromIp = "(\d*\.\d*\.\d*\.\d*)\.";
 						$fromPort = "(\d*) > ";

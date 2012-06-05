@@ -53,7 +53,7 @@
 						$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
 						$n++;
 					}
-					echo ".";
+					echo date("H:i:s")." - Start Experiment\n";
 					mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, Iteration, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$nTriples.", ".$iteration.", '".$config['args']['runId']."');");
 					$interfaceListener->start();
 					$fields = array(
@@ -63,10 +63,12 @@
 					doPost($config['master']['restlet']['updateUri'], $fields);
 					//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
 					waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
+					sleep(1); //wait, so tcp dump has really finished writing to file (probably not needed though)
 					$interfaceListener->stop(mysql_insert_id());
+					echo date("H:i:s")." - Stop Experiment\n";
 					$iteration++;
 				}
-				$nQueries++;
+				$nQueries += 2;
 			}
 		}
 	}
@@ -206,6 +208,7 @@
 		include_once(__DIR__.'/../../lib/semsol-arc2/ARC2.php');
 		$dumpDir = $config['experiments']['experimentCacheDir']."/mappings";
 		$dumpFile = $dumpDir."/mappings_".$nChanges."_".$nTriples.".txt";
+		var_export($dumpFile);exit;
 		if (file_exists($dumpFile)) {
 			include($dumpFile);
 		} else {
