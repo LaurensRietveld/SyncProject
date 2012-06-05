@@ -13,52 +13,58 @@
 		echo "Not all node are running. Required nodes: 'Debian Git Server', 'Debian Master', 'Debian Slave'. Exiting...\n";
 		exit;
 	}
-	resetNodes($config['args']['nTriples']); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
-	$mappings = loadChangesToExecute($config);
+
 	
-	if (!count($mappings)) {
-		echo "No mappings loaded from triplestore. Exiting...\n";
-		exit;
-	}
 	
-	//Write mappings to file, so we can always check whether they are actually executed
-	file_put_contents(__DIR__."/mappings.txt", var_export($mappings, true));
-	
-	foreach ($config['args']['mode'] AS $mode) {
-		$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
-		shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
-		waitForDaemonToStart($uniqueKey);
-		//Do n number of test runs, and for each run, execute n queries
-		$nQueries = 1;
-		while ($nQueries <= $config['args']['nChanges']) {
-			resetNodes($config['args']['nTriples']);
+	foreach($config['args']['nChanges'] as $key => $nChanges) {
+		$nTriples = $config['args']['nTriples'][$key];
+		
+		resetNodes($nTriples); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
+		$mappings = loadChangesToExecute($config, $nChanges);
+		if (!count($mappings)) {
+			echo "No mappings loaded from triplestore. Exiting...\n";
+			exit;
+		}
+		//Write mappings to file, so we can always check whether they are actually executed
+		file_put_contents(__DIR__."/mappings_".$nQueries."_".$nTriples.".txt", var_export($mappings, true));
+		
+		foreach ($config['args']['mode'] AS $mode) {
+
 			$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
-			$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
-			shell_exec($cmd);
-			waitForDaemonToStart($uniqueKey);
-			prepareExports($config, $mode);
-			sleep(3);
-			echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries."\n";
-			
-			$queriesToExecute = array();
-			//For run n, perform n number of queries
-			$n = 0;
-			while (count($queriesToExecute) < $nQueries) {
-				$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
-				$n++;
+			shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
+			waitForDaemonToStart($uniqueKey, __LINE__);
+			//Do n number of test runs, and for each run, execute n queries
+			$nQueries = 1;
+			while ($nQueries <= $nChanges) {
+				resetNodes($nTriples);
+				$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
+				$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
+				shell_exec($cmd);
+				waitForDaemonToStart($uniqueKey, __LINE__);
+				prepareExports($config, $mode);
+				sleep(3);
+				echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries."\n";
+				
+				$queriesToExecute = array();
+				//For run n, perform n number of queries
+				$n = 0;
+				while (count($queriesToExecute) < $nQueries) {
+					$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
+					$n++;
+				}
+				echo ".";
+				mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$nTriples.", '".$config['args']['runId']."');");
+				//startInterfaceListener($config, $mode, $nQueries);
+				$fields = array(
+						"mode" => $mode,
+						"query" => $queriesToExecute
+				);
+				doPost($config['master']['restlet']['updateUri'], $fields);
+				//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
+				waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
+				//stopInterfaceListener();
+				$nQueries++;
 			}
-			echo ".";
-			mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$config['args']['nTriples'].", '".$config['args']['runId']."');");
-			//startInterfaceListener($config, $mode, $nQueries);
-			$fields = array(
-					"mode" => $mode,
-					"query" => $queriesToExecute
-			);
-			doPost($config['master']['restlet']['updateUri'], $fields);
-			//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
-			waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId']);
-			//stopInterfaceListener();
-			$nQueries++;
 		}
 	}
 	
@@ -80,7 +86,7 @@
 		doPost($config['master']['restlet']['updateUri'], $fields);
 	
 		while (true) {
-			if (daemonFinished($mode, $timestamp)) {
+			if (daemonFinished($mode, $timestamp, __LINE__)) {
 				break;
 			} else {
 				sleep(3);
@@ -114,8 +120,8 @@
 		}
 	}
 	
-	function waitForRunToFinish($mode, $nQueries, $runId) {
-		echo date("Ymd H:i:s")." - Wait for run to finish\n";
+	function waitForRunToFinish($mode, $nQueries, $runId, $line) {
+		echo date("Ymd H:i:s")." - Wait for run to finish [".($line? $line:"")."]\n";
 		//Get timestamp from before this experiment
 		$query = "SELECT MAX(Timestamp) FROM Experiments WHERE  Mode = ".(int)$mode." AND nChanges = ".(int)$nQueries." AND RunId = '".$runId."'";
 		$result = mysql_query($query);
@@ -133,9 +139,9 @@
 		}
 	}
 	
-	function waitForDaemonToStart($uniqueKey) {
+	function waitForDaemonToStart($uniqueKey, $line) {
 		$query = "SELECT * FROM DaemonRunning WHERE `Key` = '".$uniqueKey."'";
-		echo date("H:i:s")." - Wait for daemon to start\n";
+		echo date("H:i:s")." - Wait for daemon to start [".($line? $line:"")."]\n";
 		while (true) {
 			$result = mysql_query($query);
 			if (mysql_num_rows($result) > 0) {
@@ -146,10 +152,10 @@
 		}
 	}
 	
-	function daemonFinished($mode, $timestamp) {
-		echo date("H:i:s")." - Wait for deamon to finish importing\n";
+	function daemonFinished($mode, $timestamp, $line) {
+		echo date("H:i:s")." - Wait for deamon to finish importing [".($line? $line:"")."]\n";
 		$finished = false;
-		$query = "SELECT Timestamp FROM Daemon WHERE  Mode = ".(int)$mode." AND Timestamp > '".$timestamp."'";
+		$query = "SELECT Timestamp FROM Daemon WHERE  Mode = ".(int)$mode." AND Timestamp >= '".$timestamp."'";
 		$result = mysql_query($query);
 		if (mysql_num_rows($result) > 0) {
 			$finished = true;
@@ -217,7 +223,7 @@
 	 *  
 	 *  @return array
 	 */
-	function loadChangesToExecute($config) {
+	function loadChangesToExecute($config, $nChanges) {
 		include_once(__DIR__.'/../../lib/semsol-arc2/ARC2.php');
 		$arc2Config = array('remote_store_endpoint' => $config['master']['tripleStore']['selectUri']);
 		$store = ARC2::getRemoteStore($arc2Config);
@@ -232,8 +238,8 @@
 		shuffle($results);
 		
 		//Take the first n
-		$selectedTriples = array_slice($results, 0, $config['args']['nChanges']);
-		$remainingTriples = array_slice($results, (int)$config['args']['nChanges']);
+		$selectedTriples = array_slice($results, 0, $nChanges);
+		$remainingTriples = array_slice($results, (int)$nChanges);
 		
 		//For each selected triple, create a matching triple in which 1 value is changed
 		$mappings = array(); //array containing info on what to change of a triple
@@ -269,9 +275,10 @@
 	function loadArguments() {
 		$longArgs  = array(
 				"help" => "Show help info",
-				"mode:" => "Mode to run experiments in: \n\t  (1) sync text queries; \n\t  (2) use DB; \n\t  (3) sync graph; \n\t  (4) central (git) server. Use comma seperated to run for multiple modes",
+				"mode:" => "Mode to run experiments in: \n\t  (1) Log Queries (rsync); \n\t  (2) Log Queries (DB); \n\t  (3) Serialize Graph (rsync); \n\t  (4) Log Queries (GIT); \n\t  (5) Serialize Graph (GIT);\n\t  (6) Serialize Graph (DB); \n\tUse comma seperated to run for multiple modes",
 				"nChanges:" => "How many changes to execute per iteration (default 100).",
-				"nTriples:" => "How many triples to execute experiment on (default 1000).", 
+				"nTriples:" => "How many triples to execute experiment on (default 1000).",
+				"changesVsTriples:" => "A list (comma separated) of nChanges and nTriples to perform. Useful for executing batch experiments. Notation: '100:200,150:200' (i.e. 'nQueries:nTriples,nQueries:nTriples'. This list override the nQueries and nTriples settings",
 				"runId:" => "Id to run experiment for. Uses timestamp if none provided",
 		);
 		//: => required value, :: => optional value, no semicolon => no value (boolean)
@@ -305,7 +312,9 @@
 		$args['mode'] = $modes;
 		
 		if (!$args['nChanges']) {
-			$args['nChanges'] = 100;
+			$args['nChanges'][] = 100;
+		} else {
+			$args['nChanges'] = array($args['nChanges']);
 		}
 		
 		if (!strlen($args['runId'])) {
@@ -313,7 +322,21 @@
 		}
 		
 		if (!$args['nTriples']) {
-			$args['nTriples'] = 1000;
+			$args['nTriples'][] = 1000;
+		} else {
+			$args['nTriples'] = array($args['nTriples']);
+		}
+		if (strlen($args['changesVsTriples'])) {
+			$args['nTriples'] = array();
+			$args['nChanges'] = array();
+			$sets = explode(",", $args['changesVsTriples']);
+			foreach ($sets as $set) {
+				$set = explode(":", $set);
+				if (count($set) == 2) {
+					$args['nChanges'][] = (int)reset($set);
+					$args['nTriples'][] = (int)end($set);
+				}
+			}
 		}
 		return $args;
 	}
