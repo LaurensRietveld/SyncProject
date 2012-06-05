@@ -13,12 +13,11 @@
 		echo "Not all node are running. Required nodes: 'Debian Git Server', 'Debian Master', 'Debian Slave'. Exiting...\n";
 		exit;
 	}
-
+	
 	
 	
 	foreach($config['args']['nChanges'] as $key => $nChanges) {
 		$nTriples = $config['args']['nTriples'][$key];
-		
 		resetNodes($nTriples); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
 		$mappings = loadChangesToExecute($config, $nChanges, $nTriples);
 		
@@ -26,49 +25,45 @@
 			echo "No mappings loaded from triplestore. Exiting...\n";
 			exit;
 		}
-		
-		
 		foreach ($config['args']['mode'] AS $mode) {
-
 			$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
 			shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
 			waitForDaemonToStart($uniqueKey, __LINE__);
 			//Do n number of test runs, and for each run, execute n queries
-			$nQueries = 40;
-			$i = 0;
 			while ($nQueries <= $nChanges) {
-				resetNodes($nTriples);
-				$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
-				shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
-				$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
-				shell_exec($cmd);
-				waitForDaemonToStart($uniqueKey, __LINE__);
-				
-				prepareExports($config, $mode);
-				sleep(3);
-				echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries."\n";
-				
-				$queriesToExecute = array();
-				//For run n, perform n number of queries
-				$n = 0;
-				while (count($queriesToExecute) < $nQueries) {
-					$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
-					$n++;
+				$iteration = 0;
+				while ($iteration < $config['args']['nRuns']) {
+					resetNodes($nTriples);
+					$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
+					shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
+					$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
+					shell_exec($cmd);
+					waitForDaemonToStart($uniqueKey, __LINE__);
+					prepareExports($config, $mode);
+					sleep(3);
+					echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries." - nTriples: ".$nTriples." - iteration: ".$iteration." \n";
+					
+					$queriesToExecute = array();
+					//For run n, perform n number of queries
+					$n = 0;
+					while (count($queriesToExecute) < $nQueries) {
+						$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
+						$n++;
+					}
+					echo ".";
+					mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$nTriples.", '".$config['args']['runId']."');");
+					//startInterfaceListener($config, $mode, $nQueries);
+					$fields = array(
+							"mode" => $mode,
+							"query" => $queriesToExecute
+					);
+					doPost($config['master']['restlet']['updateUri'], $fields);
+					//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
+					waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
+					//stopInterfaceListener();
+					$iteration++;
 				}
-				echo ".";
-				mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$nTriples.", '".$config['args']['runId']."');");
-				//startInterfaceListener($config, $mode, $nQueries);
-				$fields = array(
-						"mode" => $mode,
-						"query" => $queriesToExecute
-				);
-				doPost($config['master']['restlet']['updateUri'], $fields);
-				//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
-				waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
-				//stopInterfaceListener();
-				//$nQueries++;
-				$i++;
-				if ($i > 10) break;
+				$nQueries++;
 			}
 		}
 	}
@@ -234,9 +229,8 @@
 		$dumpFile = $dumpDir."/mappings_".$nChanges."_".$nTriples.".txt";
 		if (file_exists($dumpFile)) {
 			include($dumpFile);
-			var_export($mappings);exit;
+			echo "sdf".count($mappings);exit;
 		} else {
-			
 			$arc2Config = array('remote_store_endpoint' => $config['master']['tripleStore']['selectUri']);
 			$store = ARC2::getRemoteStore($arc2Config);
 			
@@ -280,7 +274,7 @@
 			if (!is_dir($dumpDir)) {
 				mkdir($dumpDir, 0777, true);
 			}
-			file_put_contents($dumpFile, '$mappings = '.var_export($mappings, true).';');
+			file_put_contents($dumpFile, '<?php $mappings = '.var_export($mappings, true).';');
 		}
 		return $mappings;
 	}
@@ -297,6 +291,7 @@
 				"nTriples:" => "How many triples to execute experiment on (default 1000).",
 				"changesVsTriples:" => "A list (comma separated) of nChanges and nTriples to perform. Useful for executing batch experiments. Notation: '100:200,150:200' (i.e. 'nQueries:nTriples,nQueries:nTriples'. This list override the nQueries and nTriples settings",
 				"runId:" => "Id to run experiment for. Uses timestamp if none provided",
+				"nRuns:" => "Number of runs to execute for each possible iteration",
 		);
 		//: => required value, :: => optional value, no semicolon => no value (boolean)
 		$args = getopt("", array_keys($longArgs));
@@ -354,6 +349,10 @@
 					$args['nTriples'][] = (int)end($set);
 				}
 			}
+		}
+		
+		if ((int)$args['nRuns'] === 0) {
+			$args['nRuns'] = 1;
 		}
 		return $args;
 	}
