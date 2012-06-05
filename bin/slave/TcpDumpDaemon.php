@@ -4,7 +4,7 @@
 	$config = getConfig();
 	$startTcp = $config['experiments']['experimentCacheDir']."/s_startTcpDump";
 	$stopTcp = $config['experiments']['experimentCacheDir']."/s_stopTcpDump";
-	$storeFile = $config['experiments']['experimentCacheDir']."/tcpDump/s_dump.txt";
+	$storeFile = $config['experiments']['experimentCacheDir']."/network/s_dump.txt";
 	while (true) {
 		//check whether I need to start daemon
 		usleep(500000); //sleep 0.5 sec
