@@ -16,60 +16,58 @@
 	}
 	
 	
+	$nTriples = $config['args']['nTriples'];
+	$nChanges = $config['args']['nChanges'];
+	resetNodes($nTriples); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
+	$mappings = loadChangesToExecute($config, $nChanges, $nTriples);
 	
-	foreach($config['args']['nChanges'] as $key => $nChanges) {
-		$nTriples = $config['args']['nTriples'][$key];
-		resetNodes($nTriples); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
-		$mappings = loadChangesToExecute($config, $nChanges, $nTriples);
-		
-		if (!count($mappings)) {
-			echo "No mappings loaded from triplestore. Exiting...\n";
-			exit;
-		}
-		foreach ($config['args']['mode'] AS $mode) {
-			$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
-			shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
-			waitForDaemonToStart($uniqueKey, __LINE__);
-			//Do n number of test runs, and for each run, execute n queries
-			$nQueries = 1;
-			while ($nQueries <= $nChanges) {
-				$iteration = 1;
-				while ($iteration <= $config['args']['nRuns']) {
-					$interfaceListener = new InterfaceListener($config, $mode, $nQueries, $nTriples, $iteration);
-					resetNodes($nTriples);
-					$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
-					shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
-					$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
-					shell_exec($cmd);
-					waitForDaemonToStart($uniqueKey, __LINE__);
-					prepareExports($config, $mode);
-					sleep(3);
-					echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries." - nTriples: ".$nTriples." - iteration: ".$iteration." \n";
-					
-					$queriesToExecute = array();
-					//For run n, perform n number of queries
-					$n = 0;
-					while (count($queriesToExecute) < $nQueries) {
-						$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
-						$n++;
-					}
-					echo date("H:i:s")." - Start Experiment\n";
-					mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, Iteration, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$nTriples.", ".$iteration.", '".$config['args']['runId']."');");
-					$interfaceListener->start();
-					$fields = array(
-							"mode" => $mode,
-							"query" => $queriesToExecute
-					);
-					doPost($config['master']['restlet']['updateUri'], $fields);
-					//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
-					waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
-					sleep(1); //wait, so tcp dump has really finished writing to file (probably not needed though)
-					$interfaceListener->stop(mysql_insert_id());
-					echo date("H:i:s")." - Stop Experiment\n";
-					$iteration++;
+	if (!count($mappings)) {
+		echo "No mappings loaded from triplestore. Exiting...\n";
+		exit;
+	}
+	foreach ($config['args']['mode'] AS $mode) {
+		$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
+		shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
+		waitForDaemonToStart($uniqueKey, __LINE__);
+		//Do n number of test runs, and for each run, execute n queries
+		$nQueries = 1;
+		while ($nQueries <= $nChanges) {
+			$iteration = 1;
+			while ($iteration <= $config['args']['nRuns']) {
+				$interfaceListener = new InterfaceListener($config, $mode, $nQueries, $nTriples, $iteration);
+				resetNodes($nTriples);
+				$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
+				shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
+				$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
+				shell_exec($cmd);
+				waitForDaemonToStart($uniqueKey, __LINE__);
+				prepareExports($config, $mode);
+				sleep(3);
+				echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries." - nTriples: ".$nTriples." - iteration: ".$iteration." \n";
+				
+				$queriesToExecute = array();
+				//For run n, perform n number of queries
+				$n = 0;
+				while (count($queriesToExecute) < $nQueries) {
+					$queriesToExecute[] = getDeleteInsertQuery($mappings[$n]);
+					$n++;
 				}
-				$nQueries += 2;
+				echo date("H:i:s")." - Start Experiment\n";
+				mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, Iteration, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$nTriples.", ".$iteration.", '".$config['args']['runId']."');");
+				$interfaceListener->start();
+				$fields = array(
+						"mode" => $mode,
+						"query" => $queriesToExecute
+				);
+				doPost($config['master']['restlet']['updateUri'], $fields);
+				//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
+				waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
+				sleep(1); //wait, so tcp dump has really finished writing to file (probably not needed though)
+				$interfaceListener->stop(mysql_insert_id());
+				echo date("H:i:s")." - Stop Experiment\n";
+				$iteration++;
 			}
+			$nQueries = $nQueries * 2;
 		}
 	}
 	
@@ -268,9 +266,8 @@
 		$longArgs  = array(
 				"help" => "Show help info",
 				"mode:" => "Mode to run experiments in: \n\t  (1) Log Queries (rsync); \n\t  (2) Log Queries (DB); \n\t  (3) Serialize Graph (rsync); \n\t  (4) Log Queries (GIT); \n\t  (5) Serialize Graph (GIT);\n\t  (6) Serialize Graph (DB); \n\tUse comma seperated to run for multiple modes",
-				"nChanges:" => "How many changes to execute per iteration (default 100).",
-				"nTriples:" => "How many triples to execute experiment on (default 1000).",
-				"changesVsTriples:" => "A list (comma separated) of nChanges and nTriples to perform. Useful for executing batch experiments. Notation: '100:200,150:200' (i.e. 'nQueries:nTriples,nQueries:nTriples'. This list override the nQueries and nTriples settings",
+				"nChanges:" => "How many changes to execute per iteration (default 1024).",
+				"nTriples:" => "How many triples to execute experiment on (default 1024).",
 				"runId:" => "Id to run experiment for. Uses timestamp if none provided",
 				"nRuns:" => "Number of runs to execute for each possible iteration",
 		);
@@ -304,10 +301,10 @@
 		}
 		$args['mode'] = $modes;
 		
+		
+		
 		if (!$args['nChanges']) {
-			$args['nChanges'][] = 100;
-		} else {
-			$args['nChanges'] = array($args['nChanges']);
+			$args['nChanges'] = 1024;
 		}
 		
 		if (!strlen($args['runId'])) {
@@ -315,21 +312,7 @@
 		}
 		
 		if (!$args['nTriples']) {
-			$args['nTriples'][] = 1000;
-		} else {
-			$args['nTriples'] = array($args['nTriples']);
-		}
-		if (strlen($args['changesVsTriples'])) {
-			$args['nTriples'] = array();
-			$args['nChanges'] = array();
-			$sets = explode(",", $args['changesVsTriples']);
-			foreach ($sets as $set) {
-				$set = explode(":", $set);
-				if (count($set) == 2) {
-					$args['nChanges'][] = (int)reset($set);
-					$args['nTriples'][] = (int)end($set);
-				}
-			}
+			$args['nTriples'] = 1024;
 		}
 		
 		if ((int)$args['nRuns'] === 0) {
