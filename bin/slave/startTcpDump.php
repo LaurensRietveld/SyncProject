@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-	include(__DIR__."/../../util.php");
+	include(__DIR__."/../util.php");
 	$config = getConfig();
 	
 	$storeInFile = $argv[1];
