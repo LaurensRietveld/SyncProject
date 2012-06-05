@@ -1,6 +1,7 @@
 #!/usr/bin/php
 <?php
 	include_once(__DIR__."/../../util.php");
+	include("InterfaceListener.php");
 	$config = getConfig();
 	$config['args'] = loadArguments();
 	
@@ -30,9 +31,11 @@
 			shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
 			waitForDaemonToStart($uniqueKey, __LINE__);
 			//Do n number of test runs, and for each run, execute n queries
+			$nQueries = 1;
 			while ($nQueries <= $nChanges) {
-				$iteration = 0;
-				while ($iteration < $config['args']['nRuns']) {
+				$iteration = 1;
+				while ($iteration <= $config['args']['nRuns']) {
+					$interfaceListener = new InterfaceListener($config, $mode, $nQueries, $nTriples, $iteration);
 					resetNodes($nTriples);
 					$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
 					shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
@@ -51,8 +54,8 @@
 						$n++;
 					}
 					echo ".";
-					mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$nTriples.", '".$config['args']['runId']."');");
-					//startInterfaceListener($config, $mode, $nQueries);
+					mysql_query("INSERT INTO Experiments (Mode, nChanges, nTriples, Iteration, RunId) VALUES (".(int)$mode.", ".(int)$nQueries.", ".(int)$nTriples.", ".$iteration.", '".$config['args']['runId']."');");
+					$interfaceListener->start();
 					$fields = array(
 							"mode" => $mode,
 							"query" => $queriesToExecute
@@ -60,7 +63,7 @@
 					doPost($config['master']['restlet']['updateUri'], $fields);
 					//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
 					waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
-					//stopInterfaceListener();
+					$interfaceListener->stop();
 					$iteration++;
 				}
 				$nQueries++;
@@ -80,7 +83,7 @@
 				"query" => "bla" //will fail, but will also make sure the graph is serialized
 		);
 		//First get current timestamp from db. This way we can wait for the processing of this post, before continuing
-		$query = "SELECT NOW() FROM Daemon LIMIT 1";
+		$query = "SELECT NOW() FROM DaemonRunning LIMIT 1";
 		$result = mysql_query($query);
 		$timestamp = reset(mysql_fetch_array($result));
 		doPost($config['master']['restlet']['updateUri'], $fields);
@@ -94,31 +97,7 @@
 		}
 	}
 	
-	function startInterfaceListener($config, $mode, $nQueries) {
-		$logdir = $config['experiments']['netStats']."/".$config['args']['runId']."/mode".$mode;
-		//var_export($logdir);exit;
-		if (!file_exists($logdir)) {
-			mkdir($logdir, 0777, true);
-		}
-		$storeInFile = $logdir."/".$nQueries.".log";
-// 		$cmd = "sudo tcpdump -nq -i vboxnet0 > ".$storeInFile." &";
-		shell_exec($cmd);
-		echo "\tStarted tcpdump as daemon\n";
-		
-	}
-	
-	function stopInterfaceListener() {
-		$result = shell_exec("ps axuwww | grep tcpdump | grep -v grep");
-		preg_match_all("/\s*root\s*(\d*).*/", $result, $matches);
-		if (is_array($matches[1])) {
-			echo "\tStopped tcp dump instances\n";
-			foreach ($matches[1] as $match) {
-				shell_exec("sudo kill ".(int)$match);
-			}
-		} else {
-			echo "\tNo tcp dump instance to kill";
-		}
-	}
+
 	
 	function waitForRunToFinish($mode, $nQueries, $runId, $line) {
 		echo date("Ymd H:i:s")." - Wait for run to finish [".($line? $line:"")."]\n";
@@ -229,7 +208,6 @@
 		$dumpFile = $dumpDir."/mappings_".$nChanges."_".$nTriples.".txt";
 		if (file_exists($dumpFile)) {
 			include($dumpFile);
-			echo "sdf".count($mappings);exit;
 		} else {
 			$arc2Config = array('remote_store_endpoint' => $config['master']['tripleStore']['selectUri']);
 			$store = ARC2::getRemoteStore($arc2Config);
@@ -330,7 +308,7 @@
 		}
 		
 		if (!strlen($args['runId'])) {
-			$args['runId'] = date("Ymd H:i");
+			$args['runId'] = date("Ymd_H-i");
 		}
 		
 		if (!$args['nTriples']) {
