@@ -44,8 +44,8 @@ class InterfaceListener {
 // 		shell_exec($cmdSlave);
 // 		echo "\tStarted tcpdump as daemon\n";
 		
-		shell_exec('ssh slave '.$config['experiments']['experimentCacheDir'].'/s_startTcpDump');
-		shell_exec('ssh master '.$config['experiments']['experimentCacheDir'].'/m_startTcpDump');
+		shell_exec('ssh slave "touch '.$this->config['experiments']['experimentCacheDir'].'/s_startTcpDump"');
+		shell_exec('ssh master "touch '.$this->config['experiments']['experimentCacheDir'].'/m_startTcpDump"');
 		sleep(1);
 		
 	}
@@ -64,60 +64,63 @@ class InterfaceListener {
 	private function storeResults($experimentId) {
 		$files = scandir($this->logDir);
 		foreach ($files as $filename) {
-			$filename = $this->logDir."/".$filename;
-			$handle = fopen($filename, "r");
-			if ($handle) {
-				while (($line = fgets($handle, 4096)) !== false) {
-					if (strlen(trim($line))) {
-						$line = trim($line);
-						
-						$time = "([\d:]*)[\d\.]* IP ";
-						$fromIp = "(\d*\.\d*\.\d*\.\d*)\.";
-						$fromPort = "(\d*) > ";
-						$toIp = "(\d*\.\d*\.\d*\.\d*)\.";
-						$toPort = "(\d*): ";
-						$protocol = "(tcp|UDP)";
-						$size = "(, length (\d*)| (\d*))";
-			
-						$pattern = "/".$time.$fromIp.$fromPort.$toIp.$toPort.$protocol.$size."/";
-						preg_match($pattern, $line, $matches);
-						$row = array();
-						if (count($matches) == 10) {
-							list(,$time, $fromIp, $fromPort, $toIp, $toPort, $protocol,,,$size) = $matches;
-						} else if (count($matches) == 9) {
-							list(,$time, $fromIp, $fromPort, $toIp, $toPort, $protocol,,$size) = $matches;
-						} else {
-							//echo "Strange... Incorrect matches from preg match: \n";
-							//var_export($matches);
-							//var_export($line);
-							//exit;
-						}
-						$queryArray = array(
-							'Time' => "'".$time."'",
-							'FromIp' => "'".$fromIp."'",
-							'FromPort' => $fromPort,
-							'ToIp' => "'".$toIp."'",
-							'ToPort' => $toPort,
-							'Protocol' => "'".$protocol."'",
-							'Size' => $size,
-							'ExperimentId' => $experimentId
-						);
-						$query = "INSERT INTO Packets (".implode(", ", array_keys($queryArray)).") VALUES (".implode(", ", $queryArray).")";
-						if (!mysql_query($query)) {
-							die('Error executing mysql: ' . mysql_error());
+			if ($filename != '.' && $filename != '..') {
+				$filename = $this->logDir."/".$filename;
+				$handle = fopen($filename, "r");
+				if ($handle) {
+					while (($line = fgets($handle, 4096)) !== false) {
+						if (strlen(trim($line))) {
+							$line = trim($line);
+							
+							$time = "([\d:]*)[\d\.]* IP ";
+							$fromIp = "(\d*\.\d*\.\d*\.\d*)\.";
+							$fromPort = "(\d*) > ";
+							$toIp = "(\d*\.\d*\.\d*\.\d*)\.";
+							$toPort = "(\d*): ";
+							$protocol = "(tcp|UDP)";
+							$size = "(, length (\d*)| (\d*))";
+				
+							$pattern = "/".$time.$fromIp.$fromPort.$toIp.$toPort.$protocol.$size."/";
+							preg_match($pattern, $line, $matches);
+							$row = array();
+							if (count($matches) == 10) {
+								list(,$time, $fromIp, $fromPort, $toIp, $toPort, $protocol,,,$size) = $matches;
+							} else if (count($matches) == 9) {
+								list(,$time, $fromIp, $fromPort, $toIp, $toPort, $protocol,,$size) = $matches;
+							} else {
+								//echo "Strange... Incorrect matches from preg match: \n";
+								//var_export($matches);
+								//var_export($line);
+								//exit;
+								continue;
+							}
+							$queryArray = array(
+								'Time' => "'".$time."'",
+								'FromIp' => "'".$fromIp."'",
+								'FromPort' => $fromPort,
+								'ToIp' => "'".$toIp."'",
+								'ToPort' => $toPort,
+								'Protocol' => "'".$protocol."'",
+								'Size' => $size,
+								'ExperimentId' => $experimentId
+							);
+							$query = "INSERT INTO Packets (".implode(", ", array_keys($queryArray)).") VALUES (".implode(", ", $queryArray).")";
+							if (!mysql_query($query)) {
+								die('Error executing mysql: ' . mysql_error() ."\n query: ".$query);
+							}
 						}
 					}
-				}
-				if (!feof($handle)) {
-					echo "Error: unexpected fgets() fail on $filename\n";
+					if (!feof($handle)) {
+						echo "Error: unexpected fgets() fail on $filename\n";
+						exit;
+					}
+					fclose($handle);
+				} else {
+					echo "cannot open file: ".$filename."\n";
 					exit;
 				}
-				fclose($handle);
-			} else {
-				echo "cannot open file: ".$filename."\n";
-				exit;
+				unlink($filename);
 			}
-			
 		}
 	}
 	
