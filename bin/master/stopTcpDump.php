@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-	include(__DIR__."/../../util.php");
+	include(__DIR__."/../util.php");
 	$config = getConfig();
 	$result = shell_exec("ps axuwww | grep tcpdump | grep -v grep");
 	preg_match_all("/\s*root\s*(\d*).*/", $result, $matches);
