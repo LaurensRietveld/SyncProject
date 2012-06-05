@@ -20,13 +20,13 @@
 		$nTriples = $config['args']['nTriples'][$key];
 		
 		resetNodes($nTriples); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
-		$mappings = loadChangesToExecute($config, $nChanges);
+		$mappings = loadChangesToExecute($config, $nChanges, $nTriples);
+		
 		if (!count($mappings)) {
 			echo "No mappings loaded from triplestore. Exiting...\n";
 			exit;
 		}
-		//Write mappings to file, so we can always check whether they are actually executed
-		file_put_contents(__DIR__."/mappings_".$nQueries."_".$nTriples.".txt", var_export($mappings, true));
+		
 		
 		foreach ($config['args']['mode'] AS $mode) {
 
@@ -34,13 +34,16 @@
 			shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
 			waitForDaemonToStart($uniqueKey, __LINE__);
 			//Do n number of test runs, and for each run, execute n queries
-			$nQueries = 1;
+			$nQueries = 40;
+			$i = 0;
 			while ($nQueries <= $nChanges) {
 				resetNodes($nTriples);
 				$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
+				shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
 				$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
 				shell_exec($cmd);
 				waitForDaemonToStart($uniqueKey, __LINE__);
+				
 				prepareExports($config, $mode);
 				sleep(3);
 				echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries."\n";
@@ -63,7 +66,9 @@
 				//executeQueries($config['master']['restlet']['updateUri'], $queriesToExecute, $mode);
 				waitForRunToFinish($mode, (int)$nQueries, $config['args']['runId'], __LINE__);
 				//stopInterfaceListener();
-				$nQueries++;
+				//$nQueries++;
+				$i++;
+				if ($i > 10) break;
 			}
 		}
 	}
@@ -223,47 +228,59 @@
 	 *  
 	 *  @return array
 	 */
-	function loadChangesToExecute($config, $nChanges) {
+	function loadChangesToExecute($config, $nChanges, $nTriples) {
 		include_once(__DIR__.'/../../lib/semsol-arc2/ARC2.php');
-		$arc2Config = array('remote_store_endpoint' => $config['master']['tripleStore']['selectUri']);
-		$store = ARC2::getRemoteStore($arc2Config);
-		
-		//Get all triples from triple store
-		$query = 'SELECT DISTINCT * WHERE {
-			?subject ?predicate ?object.
-		}'; //No limit: we want to randomize triples in php first (sparql doesnt do that)
-		$results = $store->query($query, 'rows');
-		
-		//Randomize results
-		shuffle($results);
-		
-		//Take the first n
-		$selectedTriples = array_slice($results, 0, $nChanges);
-		$remainingTriples = array_slice($results, (int)$nChanges);
-		
-		//For each selected triple, create a matching triple in which 1 value is changed
-		$mappings = array(); //array containing info on what to change of a triple
-		$choices = array('subject','predicate', 'object');//Used to randomly select which item to replace of a triple
-		foreach ($selectedTriples AS $triple) {
-			$replace = $choices[array_rand($choices)];
-			$oldTriple = $triple;
-			$newTriple = $triple;
-			//get type of value to replace
-			$type = $oldTriple[$replace." type"];
-			//Randomly get value from remaining triples which matches this type
-			shuffle($remainingTriples);
-			foreach ($remainingTriples as $remainingTriple) {
-				//We have a match for the new triple if the types are the same, and value is different (avoid deleting/inserting same value)			
-				if ($remainingTriple[$replace." type"] === $type && $remainingTriple[$replace] !== $newTriples[$replace]) {
-					//echo "Replace ".$newTriple[$replace]." with ".$remainingTriple[$replace]."\n";
-					$newTriple[$replace] = $remainingTriple[$replace];
-					break;
+		$dumpDir = $config['experiments']['experimentCacheDir']."/mappings";
+		$dumpFile = $dumpDir."/mappings_".$nChanges."_".$nTriples.".txt";
+		if (file_exists($dumpFile)) {
+			include($dumpFile);
+			var_export($mappings);exit;
+		} else {
+			
+			$arc2Config = array('remote_store_endpoint' => $config['master']['tripleStore']['selectUri']);
+			$store = ARC2::getRemoteStore($arc2Config);
+			
+			//Get all triples from triple store
+			$query = 'SELECT DISTINCT * WHERE {
+				?subject ?predicate ?object.
+			}'; //No limit: we want to randomize triples in php first (sparql doesnt do that)
+			$results = $store->query($query, 'rows');
+			
+			//Randomize results
+			shuffle($results);
+			
+			//Take the first n
+			$selectedTriples = array_slice($results, 0, $nChanges);
+			$remainingTriples = array_slice($results, (int)$nChanges);
+			
+			//For each selected triple, create a matching triple in which 1 value is changed
+			$mappings = array(); //array containing info on what to change of a triple
+			$choices = array('subject','predicate', 'object');//Used to randomly select which item to replace of a triple
+			foreach ($selectedTriples AS $triple) {
+				$replace = $choices[array_rand($choices)];
+				$oldTriple = $triple;
+				$newTriple = $triple;
+				//get type of value to replace
+				$type = $oldTriple[$replace." type"];
+				//Randomly get value from remaining triples which matches this type
+				shuffle($remainingTriples);
+				foreach ($remainingTriples as $remainingTriple) {
+					//We have a match for the new triple if the types are the same, and value is different (avoid deleting/inserting same value)			
+					if ($remainingTriple[$replace." type"] === $type && $remainingTriple[$replace] !== $newTriples[$replace]) {
+						//echo "Replace ".$newTriple[$replace]." with ".$remainingTriple[$replace]."\n";
+						$newTriple[$replace] = $remainingTriple[$replace];
+						break;
+					}
 				}
+				$mappings[] = array(
+					'original' => $oldTriple,
+					'new' => $newTriple
+				);
 			}
-			$mappings[] = array(
-				'original' => $oldTriple,
-				'new' => $newTriple
-			);
+			if (!is_dir($dumpDir)) {
+				mkdir($dumpDir, 0777, true);
+			}
+			file_put_contents($dumpFile, '$mappings = '.var_export($mappings, true).';');
 		}
 		return $mappings;
 	}

@@ -37,7 +37,7 @@
 	function loadArguments() {
 		$longArgs  = array(
 				"help" => "Show help info",
-				"mode:" => "Mode to check experiments for: \n\t  (1) sync text queries; \n\t  (2) use DB; \n\t  (3) sync graph; \n\t  (4) central (git) server.",
+				"mode:" => "Mode to check experiments for: \n\t  (1) Log Queries (rsync); \n\t  (2) Log Queries (DB); \n\t  (3) Serialize Graph (rsync); \n\t  (4) Log Queries (GIT); \n\t  (5) Serialize Graph (GIT);\n\t  (6) Serialize Graph (DB);",
 				"runId:" => "Id to run experiment for. Uses timestamp if none provided",
 				"nTriples:" => "Id to run experiment for. Uses timestamp if none provided",
 		);

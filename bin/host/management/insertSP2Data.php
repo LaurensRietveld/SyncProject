@@ -9,12 +9,16 @@
 		$nTriples = 1000;
 	}
 	
-	$dir = __DIR__."/../SP2Benchmark";
-	$turtleFile = __DIR__."/output".$nTriples.".n3";
+	$sp2dir = $config['experiments']['sp2dir'];
+	$dir = $config['experiments']['experimentCacheDir']."/sp2data";
+	if (!is_dir($dir)) {
+		mkdir($dir, 0777, true);
+	}
+	$turtleFile = $dir."/output".$nTriples.".n3";
 	echo "==== Processing SP2Benchmark turtle file for nTriples ".$nTriples." ====\n";
 	if (!file_exists($turtleFile)) {
 		//echo "\tGenerating file\n";
-		shell_exec("cd ".$dir." && sp2b_gen -t ".$nTriples." ".$turtleFile.".bak");
+		shell_exec("cd ".$sp2dir." && sp2b_gen -t ".$nTriples." ".$turtleFile.".bak");
 		//echo "\tReplacing blank nodes into URIs\n";
 		//Do this, because the experiment tries to change triples on two triple stores using this same dataset
 		//Because blank nodes have no persistent identifier, this because a bit more difficult. 
