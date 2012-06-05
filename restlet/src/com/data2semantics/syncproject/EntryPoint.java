@@ -40,10 +40,6 @@ public class EntryPoint extends Application {
 		router.attach("/update", QueryUpdate.class, Template.MODE_STARTS_WITH);
 		router.attach("/update/", QueryUpdate.class, Template.MODE_STARTS_WITH);
 		
-		router.attach("/signalSlave/{param}", UpdateSlave.class, Template.MODE_STARTS_WITH);
-//		router.attach("/update", QueryUpdate.class, Template.MODE_STARTS_WITH);
-//		router.attach("/update/", QueryUpdate.class, Template.MODE_STARTS_WITH);
-		
 		Redirector redirector = new Redirector(getContext(), "war:///index.html");
 		router.attachDefault(redirector);
 		
