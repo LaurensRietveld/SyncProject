@@ -9,12 +9,9 @@
 	shell_exec("echo '' > ".$config['master']['serializationDir']."/".$config['serializationMode']['dumpFile']);
 	//echo "\tGIT dir (incl push/commit)\n";
 	$gitDir = $config['master']['git']['dir']."/".$config['master']['git']['repoDir'];
-	`cd $gitDir; git reset .;`;
-	foreach (scandir($gitDir) as $item) {
-		if ($item == '.' || $item == '..' || $item == '.git') continue;
-		shell_exec("rm ".$gitDir.DIRECTORY_SEPARATOR.$item);
-	}
-	`cd $gitDir; git pull -q origin master;git add .; git commit -qam "cleaning dir"; git push -q origin master`;
+	`cd $gitDir; rm -rf ./* .git;git init;`;
+	file_put_contents($gitDir."/.git/config", $gitConfig);
+	`cd $gitDir; touch placeholder;git add placeholder;git commit placeholder -m "sdf";git push;`;
 	//echo "\tDB\n";
 	$db = mysql_connect("localhost:3306", "syncProject");
 	if (!$db) die('Could not connect: ' . mysql_error());
@@ -25,3 +22,23 @@
 	$uri = $config['master']['tripleStore']['clearStoreUri'];
 	$fields = array('context' => '');
 	doPost($uri, $fields);
+
+	
+	
+	
+	
+	
+	
+	
+	$gitConfig = 
+'[core]\n
+repositoryformatversion = 0\n
+filemode = true\n
+bare = false\n
+logallrefupdates = true\n
+[remote "origin"]\n
+url = lrd900@gitServer:syncProject\n
+fetch = +refs/heads/*:refs/remotes/origin/*\n
+[branch "master"]\n
+remote = origin\n
+merge = refs/heads/master';
