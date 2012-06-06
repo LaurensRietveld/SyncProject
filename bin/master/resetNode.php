@@ -10,17 +10,7 @@
 	//echo "\tGIT dir (incl push/commit)\n";
 	$gitDir = $config['master']['git']['dir']."/".$config['master']['git']['repoDir'];
 	`cd $gitDir; rm -rf ./* .git;git init;`;
-	file_put_contents($gitDir."/.git/config", '[core]\n
-repositoryformatversion = 0\n
-filemode = true\n
-bare = false\n
-logallrefupdates = true\n
-[remote "origin"]\n
-url = lrd900@gitServer:syncProject\n
-fetch = +refs/heads/*:refs/remotes/origin/*\n
-[branch "master"]\n
-remote = origin\n
-merge = refs/heads/master');
+	file_put_contents($gitDir."/.git/config", $gitConfig);
 	`cd $gitDir; touch placeholder;git add placeholder;git commit placeholder -m "sdf";git push origin master;`;
 	//echo "\tDB\n";
 	$db = mysql_connect("localhost:3306", "syncProject");
