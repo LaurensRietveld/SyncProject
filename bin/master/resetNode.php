@@ -21,7 +21,7 @@ fetch = +refs/heads/*:refs/remotes/origin/*\n
 [branch \"master\"]\n
 remote = origin\n
 merge = refs/heads/master");
-	`cd $gitDir; touch placeholder;git add placeholder;git commit placeholder -m "sdf";git push origin master;`;
+	`cd $gitDir; touch update.log;git add update.log;git commit update.log -m "sdf";git push origin master;`;
 	//echo "\tDB\n";
 	$db = mysql_connect("localhost:3306", "syncProject");
 	if (!$db) die('Could not connect: ' . mysql_error());
