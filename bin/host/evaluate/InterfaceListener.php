@@ -63,6 +63,7 @@ class InterfaceListener {
 	}
 	private function storeResults($experimentId) {
 		$files = scandir($this->logDir);
+		$queryArrays = array();
 		foreach ($files as $filename) {
 			if ($filename != '.' && $filename != '..') {
 				$filename = $this->logDir."/".$filename;
@@ -94,7 +95,7 @@ class InterfaceListener {
 								//exit;
 								continue;
 							}
-							$queryArray = array(
+							$queryArrays[] = array(
 								'Time' => "'".$time."'",
 								'FromIp' => "'".$fromIp."'",
 								'FromPort' => $fromPort,
@@ -104,10 +105,8 @@ class InterfaceListener {
 								'Size' => $size,
 								'ExperimentId' => $experimentId
 							);
-							$query = "INSERT INTO Packets (".implode(", ", array_keys($queryArray)).") VALUES (".implode(", ", $queryArray).")";
-							if (!mysql_query($query)) {
-								die('Error executing mysql: ' . mysql_error() ."\n query: ".$query);
-							}
+							
+							
 						}
 					}
 					if (!feof($handle)) {
@@ -119,7 +118,42 @@ class InterfaceListener {
 					echo "cannot open file: ".$filename."\n";
 					exit;
 				}
-				unlink($filename);
+				shell_exec("rm ".$filename);
+			}
+		}
+		if (count($queryArrays)) {
+			$this->insertIntoDb($queryArrays);
+		}
+	}
+	
+	private function insertIntoDb($packetArrays) {
+		$insertArray = array();
+		
+// 		'Time' => "'".$time."'",
+// 		'FromIp' => "'".$fromIp."'",
+// 		'FromPort' => $fromPort,
+// 		'ToIp' => "'".$toIp."'",
+// 		'ToPort' => $toPort,
+// 		'Protocol' => "'".$protocol."'",
+// 		'Size' => $size,
+// 		'ExperimentId' => $experimentId
+		foreach ($packetArrays as $packetArray) {
+			$aggregateArray =& $insertArray[$packetArray['FromIp'].$packetArray['ToIp'].$packetArray['FromPort'].$packetArray['ToPort']];
+			$aggregateArray['Time'] = $packetArray['Time'];
+			$aggregateArray['FromIp'] = $packetArray['FromIp'];
+			$aggregateArray['FromPort'] = $packetArray['FromPort'];
+			$aggregateArray['ToIp'] = $packetArray['ToIp'];
+			$aggregateArray['ToPort'] = $packetArray['ToPort'];
+			$aggregateArray['Protocol'] = $packetArray['Protocol'];
+			$aggregateArray['Size'] += $packetArray['Size']; //HERE: do the aggregate
+			$aggregateArray['ExperimentId'] = $packetArray['ExperimentId'];
+		}
+		
+		foreach ($insertArray as $insert) {
+			
+			$query = "INSERT INTO Packets (".implode(", ", array_keys($insert)).") VALUES (".implode(", ", $insert).")";
+			if (!mysql_query($query)) {
+				die('Error executing mysql: ' . mysql_error() ."\n query: ".$query);
 			}
 		}
 	}

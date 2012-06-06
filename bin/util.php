@@ -99,7 +99,7 @@ function executeQueries($uri, $queries, $mode) {
 function deleteDirContent($dir) {
 	foreach (scandir($dir) as $item) {
 		if ($item == '.' || $item == '..') continue;
-		unlink($dir.DIRECTORY_SEPARATOR.$item);
+		shell_exec("rm ".$dir.DIRECTORY_SEPARATOR.$item);
 	}
 }
 

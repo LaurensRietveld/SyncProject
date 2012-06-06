@@ -9,7 +9,7 @@
 		usleep(500000); //sleep 0.5 sec
 		if (file_exists($startTcp)) {
 			startDaemon($storeFile);
-			unlink($startTcp);
+			shell_exec("rm ".$startTcp);
 		}
 	}
 	

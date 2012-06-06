@@ -12,7 +12,7 @@
 	`cd $gitDir; git reset .;`;
 	foreach (scandir($gitDir) as $item) {
 		if ($item == '.' || $item == '..' || $item == '.git') continue;
-		unlink($gitDir.DIRECTORY_SEPARATOR.$item);
+		shell_exec("rm ".$gitDir.DIRECTORY_SEPARATOR.$item);
 	}
 	`cd $gitDir; git pull -q origin master;git add .; git commit -qam "cleaning dir"; git push -q origin master`;
 	//echo "\tDB\n";
