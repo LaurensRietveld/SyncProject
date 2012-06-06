@@ -11,7 +11,7 @@
 	$gitDir = $config['master']['git']['dir']."/".$config['master']['git']['repoDir'];
 	`cd $gitDir; rm -rf ./* .git;git init;`;
 	file_put_contents($gitDir."/.git/config", $gitConfig);
-	`cd $gitDir; touch placeholder;git add placeholder;git commit placeholder -m "sdf";git push;`;
+	`cd $gitDir; touch placeholder;git add placeholder;git commit placeholder -m "sdf";git push origin master;`;
 	//echo "\tDB\n";
 	$db = mysql_connect("localhost:3306", "syncProject");
 	if (!$db) die('Could not connect: ' . mysql_error());
