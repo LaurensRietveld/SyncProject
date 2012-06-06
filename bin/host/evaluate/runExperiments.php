@@ -37,12 +37,11 @@
 				$interfaceListener = new InterfaceListener($config, $mode, $nQueries, $nTriples, $iteration);
 				resetNodes($nTriples);
 				$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
-				shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
-				$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
-				shell_exec($cmd);
-				waitForDaemonToStart($uniqueKey, __LINE__);
+				restartTomcat();
+				restartSlaveDaemon($mode, $uniqueKey);
+				
 				prepareExports($config, $mode);
-				sleep(3);
+				sleep(2);
 				echo date("H:i:s")." - Mode: ".$mode." - nChanges: ".$nQueries." - nTriples: ".$nTriples." - iteration: ".$iteration." \n";
 				
 				$queriesToExecute = array();
@@ -70,7 +69,33 @@
 		}
 	}
 	
+	/**
+	 * 
+	 * @param int $mode Mode to run daemon in
+	 * @param String $uniqueKey Unique key to pass on to daemon, so we can check whether it is up and running
+	 * @param boolean $addExperimentId If we want to add an experiment Id to the daemon, then query the experiment table for the next auto-increment value (not exact, but for this setup it will work)
+	 * 
+	 */
+	function restartSlaveDaemon($mode, $uniqueKey, $addExperimentId) {
+		$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
+		if ($addExperimentId) {
+			$result = mysql_query("SELECT MAX(ExperimentId FROM Experiments");
+			$id = reset(mysql_fetch_array($result));
+			if (!$id) {//No data in experiment table
+				$id = 1;
+			}
+			$cmd .= " ".$id;
+		}
+		
+		
+		shell_exec($cmd);
+		waitForDaemonToStart($uniqueKey, __LINE__);
+	}
 	
+	function restartTomcat() {
+		shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
+		shell_exec("ssh -t slave 'sudo /etc/init.d/tomcat6 restart'");
+	}
 	function prepareExports($config, $mode) {
 		//These mode serialized the triple stores, and then sync them
 		//The 'resetNode' functionality cleared the slave and master nodes, which means there are no existing serializations and stuff on disc

@@ -15,8 +15,8 @@ public class ExecuteQueriesFromGit extends Mode implements ModeInterface {
 	private File queriesFile;
 	private ProcessBuilder gitPull;
 
-	public ExecuteQueriesFromGit(Config config, String key) throws Exception {
-		super(config, key);
+	public ExecuteQueriesFromGit(Config config, String key, int experimentId) throws Exception {
+		super(config, key, experimentId);
 		this.gitPath = new File(config.getString("slave.git.dir") + "/" + config.getString("slave.git.repoDir"));
 		if (!gitPath.exists()) {
 			throw new IOException("Git path does not exist: " + gitPath.getAbsolutePath());

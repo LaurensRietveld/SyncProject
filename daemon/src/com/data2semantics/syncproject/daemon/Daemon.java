@@ -29,20 +29,20 @@ public class Daemon {
 		this.mode = mode;
 	}
 	
-	public void initDaemon(String key)throws Exception {
+	public void initDaemon(String key, int experimentId)throws Exception {
 		this.loadConfigFile();
 		if (mode == ExecuteQueriesFromGit.MODE) {
-			new ExecuteQueriesFromGit(config, key);
+			new ExecuteQueriesFromGit(config, key, experimentId);
 		} else if (mode == ExecuteQueriesFromText.MODE) {
-			new ExecuteQueriesFromText(config, key);
+			new ExecuteQueriesFromText(config, key, experimentId);
 		} else if (mode == ImportTriplesFromText.MODE) {
-			new ImportTriplesFromText(config, key);
+			new ImportTriplesFromText(config, key, experimentId);
 		} else if (mode == ExecuteQueriesFromDb.MODE) {
-			new ExecuteQueriesFromDb(config, key);
+			new ExecuteQueriesFromDb(config, key, experimentId);
 		} else if (mode == ImportTriplesFromGit.MODE) {
-			new ImportTriplesFromGit(config, key);
+			new ImportTriplesFromGit(config, key, experimentId);
 		} else if (mode == ImportTriplesFromDb.MODE) {
-			new ImportTriplesFromDb(config, key);
+			new ImportTriplesFromDb(config, key, experimentId);
 		}
 	}
 	
@@ -70,6 +70,7 @@ public class Daemon {
 		options.addOption(new Option("help", "print this message"));
 		options.addOption(OptionBuilder.withArgName("mode").hasArg().withDescription("Mode to run: (1) sync text queries; (2) use DB to sync text queries; (3) sync graph complete graph using rsync; (4) use central (git) server to sync queries; (5) Use central git server to sync graphs; (6) Use DB to sync triples of graph").create("mode"));
 		options.addOption(OptionBuilder.withArgName("key").hasArg().withDescription("Used for experiment setup. This key is stored in experiments database, so the script running the experiments can check when the daemon has started.").create("key"));
+		options.addOption(OptionBuilder.withArgName("experimentId").hasArg().withDescription("Used for experiment setup. This way we can link the daemon to an experiment.").create("experimentId"));
 		
 		CommandLineParser parser = new GnuParser();
 		CommandLine commands = null;
@@ -104,8 +105,12 @@ public class Daemon {
         if (commands.hasOption("key")) {
         	key = commands.getOptionValue("key");
         }
+        int experimentId = 0;
+        if (commands.hasOption("experimentId")) {
+        	experimentId = Integer.parseInt(commands.getOptionValue("experimentId"));
+        }
 		try {
-			daemon.initDaemon(key);
+			daemon.initDaemon(key, experimentId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

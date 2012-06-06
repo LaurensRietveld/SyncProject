@@ -16,8 +16,8 @@ public class ImportTriplesFromDb extends Mode implements ModeInterface {
 	private Connection connection;
 	private HashMap<String, PreparedStatement> preparedStatements = new HashMap<String, PreparedStatement>();
 	private String lastUpdate = "";
-	public ImportTriplesFromDb(Config config, String key) throws Exception {
-		super(config, key);
+	public ImportTriplesFromDb(Config config, String key, int experimentId) throws Exception {
+		super(config, key, experimentId);
 		Class.forName(config.getString("slave.db.javaDriver"));
 		this.connection = DriverManager.getConnection(config.getString("slave.db.connection"));
 		this.connection.setAutoCommit(false);

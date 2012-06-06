@@ -11,8 +11,8 @@ public class ExecuteQueriesFromText extends Mode implements ModeInterface {
 	private String delimiter;
 	private String tripleStoreUri;
 	
-	public ExecuteQueriesFromText(Config config, String key) throws Exception {
-		super(config, key);
+	public ExecuteQueriesFromText(Config config, String key, int experimentId) throws Exception {
+		super(config, key, experimentId);
 		
 		//this.initPreparedStatements();
 		queriesFile = new File(config.getString("slave.queryLogDir") + "/" + config.getString("queryLogMode.updateFile"));

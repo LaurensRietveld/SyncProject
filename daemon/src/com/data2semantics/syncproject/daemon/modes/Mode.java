@@ -16,9 +16,11 @@ public class Mode {
 	protected PreparedStatement insertKey;
 	private String hostname;
 	private String key;
-	Mode(Config config, String key) throws Exception {
+	private int experimentId;
+	Mode(Config config, String key, int experimentId) throws Exception {
 		this.hostname = java.net.InetAddress.getLocalHost().getHostName();
 		this.key = key;
+		this.experimentId = experimentId;
 		this.config = config;
 		this.sleepInterval = config.getInt("slave.daemon.checkInterval");	
 		Class.forName(config.getString("experiments.db.javaDriver"));
@@ -26,8 +28,8 @@ public class Mode {
 		//this.expConnection = DriverManager.getConnection("jdbc:mysql://localhost/Experiments?user=syncProject");
 		this.expConnection.setAutoCommit(false);
 		insertExperimentInto = expConnection.prepareStatement(
-			"INSERT INTO Daemon (Mode,Node)\n" +
-			"VALUES (?, ?)");
+			"INSERT INTO Daemon (Mode,Node,ExperimentId)\n" +
+			"VALUES (?, ?, ?)");
 		insertKey = expConnection.prepareStatement("INSERT INTO DaemonRunning (`Key`) VALUES (?)");
 	}
 	
@@ -48,6 +50,7 @@ public class Mode {
 	public void storeExperimentInfo(int mode) throws SQLException, UnknownHostException {
 		insertExperimentInto.setInt(1, mode);
 		insertExperimentInto.setString(2, hostname);
+		insertExperimentInto.setInt(3, experimentId);
 		insertExperimentInto.executeUpdate();
 	}
 	

@@ -16,8 +16,8 @@ public class ExecuteQueriesFromDb extends Mode implements ModeInterface {
 	public static int MODE = 2;
 	private Connection connection;
 	private HashMap<String, PreparedStatement> preparedStatements = new HashMap<String, PreparedStatement>();
-	public ExecuteQueriesFromDb(Config config, String key) throws Exception {
-		super(config, key);
+	public ExecuteQueriesFromDb(Config config, String key, int experimentId) throws Exception {
+		super(config, key, experimentId);
 		Class.forName(config.getString("slave.db.javaDriver"));
 		this.connection = DriverManager.getConnection(config.getString("slave.db.connection"));
 		this.connection.setAutoCommit(false);
