@@ -60,6 +60,7 @@ public class LogQueriesGit extends GenericLogger{
 	}
 	
 	public void loggingCallback() throws Exception {
+		Util.executeCmd(gitAdd);
 		Util.executeCmd(gitCommit);
 		Util.executeCmd(gitPush);
 	}
