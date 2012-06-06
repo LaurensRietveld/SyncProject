@@ -11,7 +11,17 @@
 	//echo "\tGIT dir (only pull. run master beforehand)\n";
 	$gitDir = $config['slave']['git']['dir']."/".$config['slave']['git']['repoDir'];
 	`cd $gitDir; rm -rf ./* .git;git init;`;
-	file_put_contents($gitDir."/.git/config", $gitConfig);
+	file_put_contents($gitDir."/.git/config", "[core]\n
+repositoryformatversion = 0\n
+filemode = true\n
+bare = false\n
+logallrefupdates = true\n
+[remote \"origin\"]\n
+url = lrd900@gitServer:syncProject\n
+fetch = +refs/heads/*:refs/remotes/origin/*\n
+[branch \"master\"]\n
+remote = origin\n
+merge = refs/heads/master");
 	`cd $gitDir; git pull origin master`;
 	//echo "\texecuted query log DB table\n";
 	$db = mysql_connect("localhost:3306", "syncProject");
@@ -23,18 +33,3 @@
 	$uri = $config['slave']['tripleStore']['clearStoreUri'];
 	$fields = array('context' => '');
 	doPost($uri, $fields);
-	
-	
-	
-$gitConfig =
-'[core]\n
-repositoryformatversion = 0\n
-filemode = true\n
-bare = false\n
-logallrefupdates = true\n
-[remote "origin"]\n
-url = lrd900@gitServer:syncProject\n
-fetch = +refs/heads/*:refs/remotes/origin/*\n
-[branch "master"]\n
-remote = origin\n
-merge = refs/heads/master';
