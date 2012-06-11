@@ -13,6 +13,7 @@ public class LogQueriesGit extends GenericLogger{
 	private ProcessBuilder gitPush;
 	private ProcessBuilder gitCommit;
 	private ProcessBuilder gitAdd;
+	private ProcessBuilder touch;
 	private Config config;
 	private File gitPath;
 	private File logFile;
@@ -25,6 +26,11 @@ public class LogQueriesGit extends GenericLogger{
 			throw new IOException("Git dir does not exist, or cannot execute");
 		}
 		logFile = new File(gitPath.getAbsolutePath() + "/" + config.getString("queryLogMode.updateFile"));
+		
+		//touch
+		String[] touchCmd = new String[]{"touch", logFile.getName()};
+		touch = new ProcessBuilder(touchCmd);
+		touch.directory(gitPath);
 		
 		//Set push command
 		String[] pushCmd = new String[]{"git", "push"};
@@ -51,12 +57,17 @@ public class LogQueriesGit extends GenericLogger{
 	public void log(Query query) throws Exception {
 		if (!logFile.exists()) {
 	    	query.getLogger().warning("Log file does not existing. Creating one: " + logFile.getPath());
-	    	logFile.createNewFile();
+	    	//logFile.createNewFile();
+//	    	if (!logFile.exists()) {
+//	    		throw new Exception("Failed creating new logfile");
+//	    	}
+	    	//Thread.sleep(1000);
+	    	Util.executeCmd(touch);
 	    	Util.executeCmd(gitAdd);
 		}
-		Util.writeQueryToFile(query.getLogger(), logFile, config.getString("queryLogMode.queryDelimiter") + query.getSparqlQuery());
 		
-
+		Util.writeQueryToFile(query.getLogger(), logFile, config.getString("queryLogMode.queryDelimiter") + query.getSparqlQuery());
+		//Util.executeCmd(gitCommit);
 	}
 	
 	public void loggingCallback() throws Exception {

@@ -39,7 +39,7 @@ public class SerializeGraphRsync extends GenericLogger{
 	    	getMain().getLogger().info("going to process query and write all results to file");
 	    	
 	    	Util.writeSerializationToFile(result, exportFile);
-	    	String destFile = "lrd900@" + config.getString("slave.serverLocation") + ":" + config.getString("slave.serializationDir") + "/" + config.getString("serializationMode.dumpFile");
+	    	String destFile = "sproject@" + config.getString("slave.serverLocation") + ":" + config.getString("slave.serializationDir") + "/" + config.getString("serializationMode.dumpFile");
 	    	Util.rsync(exportFile, destFile);
 		}
 	}

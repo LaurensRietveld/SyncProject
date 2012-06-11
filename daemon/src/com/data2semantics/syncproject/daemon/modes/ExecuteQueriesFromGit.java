@@ -31,7 +31,7 @@ public class ExecuteQueriesFromGit extends Mode implements ModeInterface {
 		tripleStoreUri = config.getString("slave.tripleStore.updateUri");
 		
 		//Set pull command
-        String[] pullCmd = new String[]{"git", "pull"};
+        String[] pullCmd = new String[]{"git", "pull", "origin", "master"};
         gitPull = new ProcessBuilder(pullCmd);
         gitPull.directory(gitPath);
         

@@ -22,7 +22,7 @@ public class ImportTriplesFromGit extends Mode implements ModeInterface {
 		this.dumpFile = new File(gitPath.getAbsolutePath() + "/" + config.getString("serializationMode.dumpFile"));
 		this.updateUri = config.getString("slave.tripleStore.updateUri");
 		
-        String[] pullCmd = new String[]{"git", "pull"};
+        String[] pullCmd = new String[]{"git", "pull", "origin", "master"};
         gitPull = new ProcessBuilder(pullCmd);
         gitPull.directory(gitPath);
 		

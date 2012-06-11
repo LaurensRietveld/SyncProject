@@ -15,7 +15,9 @@
 		exit;
 	}
 	
-	
+	$startAtnChanges = $config['args']['startAtnChanges'];
+	$startAtnRuns = $config['args']['startAtnRuns'];
+
 	$nTriples = $config['args']['nTriples'];
 	$nChanges = $config['args']['nChanges'];
 	resetNodes($nTriples); //reset node before loading mappings, as resetting als insert triples in master triple store, which is needed to create the mappings.
@@ -27,18 +29,19 @@
 	}
 	foreach ($config['args']['mode'] AS $mode) {
 		$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
-		shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
+		shell_exec("ssh sproject@slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey);
+		
 		waitForDaemonToStart($uniqueKey, __LINE__);
 		//Do n number of test runs, and for each run, execute n queries
-		$nQueries = 1;
+		$nQueries = $startAtnChanges;
 		while ($nQueries <= $nChanges) {
-			$iteration = 1;
+			$iteration = $startAtnRuns;
 			while ($iteration <= $config['args']['nRuns']) {
 				$interfaceListener = new InterfaceListener($config, $mode, $nQueries, $nTriples, $iteration);
 				resetNodes($nTriples);
 				$uniqueKey = sha1(microtime(true).mt_rand(10000,90000));
 				restartTomcat();
-				restartSlaveDaemon($mode, $uniqueKey);
+				restartSlaveDaemon($mode, $uniqueKey, true);
 				
 				prepareExports($config, $mode);
 				sleep(2);
@@ -77,9 +80,9 @@
 	 * 
 	 */
 	function restartSlaveDaemon($mode, $uniqueKey, $addExperimentId) {
-		$cmd = "ssh slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
+		$cmd = "ssh sproject@slave /home/lrd900/gitCode/bin/slave/restartDaemon.php ".$mode." ".$uniqueKey;
 		if ($addExperimentId) {
-			$result = mysql_query("SELECT MAX(ExperimentId FROM Experiments");
+			$result = mysql_query("SELECT MAX(ExperimentId) FROM Experiments");
 			$id = reset(mysql_fetch_array($result));
 			if (!$id) {//No data in experiment table
 				$id = 1;
@@ -87,14 +90,13 @@
 			$cmd .= " ".$id;
 		}
 		
-		
 		shell_exec($cmd);
 		waitForDaemonToStart($uniqueKey, __LINE__);
 	}
 	
 	function restartTomcat() {
-		shell_exec("ssh -t master 'sudo /etc/init.d/tomcat6 restart'");
-		shell_exec("ssh -t slave 'sudo /etc/init.d/tomcat6 restart'");
+		shell_exec("ssh -t sproject@master 'sudo /etc/init.d/tomcat6 restart'");
+		shell_exec("ssh -t sproject@slave 'sudo /etc/init.d/tomcat6 restart'");
 	}
 	function prepareExports($config, $mode) {
 		//These mode serialized the triple stores, and then sync them
@@ -111,9 +113,9 @@
 		$result = mysql_query($query);
 		$timestamp = reset(mysql_fetch_array($result));
 		doPost($config['master']['restlet']['updateUri'], $fields);
-	
+		echo date("H:i:s")." - Wait for deamon to finish importing [".__LINE__."]\n";
 		while (true) {
-			if (daemonFinished($mode, $timestamp, __LINE__)) {
+			if (daemonFinished($mode, $timestamp)) {
 				break;
 			} else {
 				sleep(3);
@@ -133,12 +135,12 @@
 			echo "No timestamp inserted by experiment. Strange. Stopping...\n";
 			exit;
 		}
+		echo date("H:i:s")." - Wait for deamon to finish importing [".__LINE__."]\n";
 		while (true) {
-			sleep(3);
-			if (daemonFinished) {
+			usleep(500000);//sleep 0.5 sec
+			if (daemonFinished($mode, $timestamp)) {
 				break;
 			}
-			
 		}
 	}
 	
@@ -155,8 +157,7 @@
 		}
 	}
 	
-	function daemonFinished($mode, $timestamp, $line) {
-		echo date("H:i:s")." - Wait for deamon to finish importing [".($line? $line:"")."]\n";
+	function daemonFinished($mode, $timestamp) {
 		$finished = false;
 		$query = "SELECT Timestamp FROM Daemon WHERE  Mode = ".(int)$mode." AND Timestamp >= '".$timestamp."'";
 		$result = mysql_query($query);
@@ -206,8 +207,16 @@
 	 * Reset nodes to initial state by deleting/emptying dirs, db, and reinserting data in triplestore
 	 */
 	function resetNodes($nTriples) {
-		echo shell_exec("ssh master /home/lrd900/gitCode/bin/master/resetNode.php");
-		echo shell_exec("ssh slave /home/lrd900/gitCode/bin/slave/resetNode.php");
+		echo shell_exec("ssh sproject@gitServer /home/lrd900/gitCode/bin/gitServer/resetNode.php");
+		
+		echo shell_exec("ssh sproject@master /home/lrd900/gitCode/bin/master/setPermissions.sh");
+		echo shell_exec("ssh sproject@master /home/lrd900/gitCode/bin/master/resetNode.php");
+		echo shell_exec("ssh sproject@master /home/lrd900/gitCode/bin/master/setPermissions.sh");
+		
+		echo shell_exec("ssh sproject@slave /home/lrd900/gitCode/bin/slave/setPermissions.sh");
+		echo shell_exec("ssh sproject@slave /home/lrd900/gitCode/bin/slave/resetNode.php");
+		echo shell_exec("ssh sproject@slave /home/lrd900/gitCode/bin/slave/setPermissions.sh");
+		
 		echo shell_exec(__DIR__."/../management/insertSP2Data.php ".$nTriples);
 	}
 	
@@ -291,7 +300,9 @@
 				"mode:" => "Mode to run experiments in: \n\t  (1) Log Queries (rsync); \n\t  (2) Log Queries (DB); \n\t  (3) Serialize Graph (rsync); \n\t  (4) Log Queries (GIT); \n\t  (5) Serialize Graph (GIT);\n\t  (6) Serialize Graph (DB); \n\tUse comma seperated to run for multiple modes",
 				"nChanges:" => "How many changes to execute per iteration (default 1024).",
 				"nTriples:" => "How many triples to execute experiment on (default 1024).",
+				"startAtnChanges:" => "For this set of iterations, the number of changes to start from. Useful in case you want to resume experiments which have stopped",
 				"runId:" => "Id to run experiment for. Uses timestamp if none provided",
+				"startAtnRuns:" => "For this set of runs, the run to start from. Useful in case you want to resume experiments which have stopped",
 				"nRuns:" => "Number of runs to execute for each possible iteration",
 		);
 		//: => required value, :: => optional value, no semicolon => no value (boolean)
@@ -337,9 +348,16 @@
 		if (!$args['nTriples']) {
 			$args['nTriples'] = 1024;
 		}
+		if (!$args['startAtnChanges']) {
+			$args['startAtnChanges'] = 1;
+		}
 		
 		if ((int)$args['nRuns'] === 0) {
 			$args['nRuns'] = 1;
 		}
+		if (!$args['startAtnRuns']) {
+			$args['startAtnRuns'] = 1;
+		}
+		
 		return $args;
 	}
