@@ -4,10 +4,10 @@ SyncProject
 ##Dependencies:##
 The 3 servers (master, slave and a git server) all run in virtual machines (Debian on VirtualBox), with identical hardware. The scripts to setup/run the experiments and applications, depend on this setup. However, in general, the approaches here are generic to run on all types of OS and hardware.
 
-###Restlet###
-* Java webserver which alles encoded slashes in parameters. (for tomcat, add this to catalina.sh: JAVA_OPTS="$JAVA_OPTS -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true"
-###Daemon###
+
+* For the restlet to work: Java webserver which alles encoded slashes in parameters. (for tomcat, add this to catalina.sh: JAVA_OPTS="$JAVA_OPTS -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true"
 * Operating system with rsync
+* A mysql db on the host, used to store experiment results in. DB name: 'Experiments'. Set username to 'syncProject' and password blank. Allow connections from localhost, slave and master
 
 
 ##Getting Started##
